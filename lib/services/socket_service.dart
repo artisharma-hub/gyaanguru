@@ -1,7 +1,14 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-const _wsBase = 'ws://192.168.100.53:8000';
+/// Converts the BASE_URL (http/https) to a WebSocket URL (ws/wss).
+String get _wsBase {
+  final url = dotenv.env['BASE_URL'] ?? 'http://192.168.100.53:8000';
+  return url
+      .replaceFirst('https://', 'wss://')
+      .replaceFirst('http://', 'ws://');
+}
 
 class SocketService {
   WebSocketChannel? _channel;

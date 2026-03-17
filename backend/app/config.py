@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-secret"
     jwt_algorithm: str = "HS256"
     jwt_expire_hours: int = 720
+    port: int = 8000
     environment: str = "development"
     # Base URL for share links (override in .env for production)
     public_url: str = "http://192.168.100.53:8000"

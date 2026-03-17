@@ -22,7 +22,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   String _selectedCategory = 'cricket';
   int _navIndex = 2;
 
-  static const _categories = ['cricket','bollywood','gk','math','science','hindi'];
+  static const _categories = [
+    'cricket', 'bollywood', 'gk', 'math', 'science', 'hindi'
+  ];
   static const _categoryNames = {
     'cricket': 'Cricket', 'bollywood': 'Bollywood', 'gk': 'GK',
     'math': 'Math', 'science': 'Science', 'hindi': 'Hindi',
@@ -67,29 +69,30 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   Widget build(BuildContext context) {
     final lbState = ref.watch(leaderboardProvider);
     final user    = ref.watch(authProvider).valueOrNull;
+    final ac      = context.ac;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // ── Header ────────────────────────────────────────────────────
+            // ── Header ──────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Row(
                 children: [
                   ShaderMask(
-                    shaderCallback: (b) => const LinearGradient(
-                      colors: [AppColors.textPrimary, AppColors.primaryLight],
+                    shaderCallback: (b) => LinearGradient(
+                      colors: [ac.textPrimary, AppColors.primaryLight],
                     ).createShader(b),
                     child: const Text(
                       'Leaderboard',
                       style: TextStyle(
                         color: Colors.white,
-                        fontFamily: 'Nunito',
+                        fontFamily: 'Poppins',
                         fontWeight: FontWeight.w900,
                         fontSize: 26,
                         letterSpacing: -0.3,
@@ -98,8 +101,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                   ),
                   const Spacer(),
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: 42, height: 42,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFD97706), AppColors.gold],
@@ -121,14 +123,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ),
 
-            // ── Tab bar ───────────────────────────────────────────────────
+            // ── Tab bar ─────────────────────────────────────────────────
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: ac.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: ac.border),
               ),
               child: TabBar(
                 controller: _tabController,
@@ -147,9 +149,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
                 labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textSecondary,
+                unselectedLabelColor: ac.textSecondary,
                 labelStyle: const TextStyle(
-                  fontFamily: 'Nunito',
+                  fontFamily: 'Poppins',
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
@@ -162,7 +164,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             ),
             const SizedBox(height: 10),
 
-            // ── Category dropdown (tab 2 only) ─────────────────────────────
+            // ── Category dropdown (tab 2 only) ───────────────────────────
             AnimatedBuilder(
               animation: _tabController,
               builder: (context, _) {
@@ -171,18 +173,18 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: DropdownButtonFormField<String>(
                     initialValue: _selectedCategory,
-                    dropdownColor: AppColors.surfaceVariant,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Nunito',
+                    dropdownColor: ac.surfaceVariant,
+                    style: TextStyle(
+                      color: ac.textPrimary,
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppColors.surfaceVariant,
+                      fillColor: ac.surfaceVariant,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: ac.border),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
@@ -204,12 +206,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               },
             ),
 
-            // ── List ──────────────────────────────────────────────────────
+            // ── Player list ──────────────────────────────────────────────
             Expanded(
               child: lbState.when(
-                loading: () => const Center(
+                loading: () => Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(AppColors.primaryLight),
+                    valueColor:
+                        const AlwaysStoppedAnimation(AppColors.primaryLight),
                   ),
                 ),
                 error: (e, _) => Center(
@@ -217,8 +220,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 64,
-                        height: 64,
+                        width: 64, height: 64,
                         decoration: BoxDecoration(
                           color: AppColors.wrongRed.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
@@ -227,11 +229,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                             color: AppColors.wrongRed, size: 32),
                       ),
                       const SizedBox(height: 14),
-                      const Text(
+                      Text(
                         'Failed to load',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontFamily: 'Nunito',
+                          color: ac.textPrimary,
+                          fontFamily: 'Poppins',
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -248,29 +250,30 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                   final players =
                       ((data['players'] ?? data['leaderboard'] ?? []) as List)
                           .cast<Map<String, dynamic>>();
-                  final myRank = (data['my_rank'] as num?)?.toInt();
+                  final myRank  = (data['my_rank'] as num?)?.toInt();
                   final myEntry = data['my_entry'] as Map<String, dynamic>?;
-                  final showMyEntry = myRank != null && myRank > 50 && myEntry != null;
+                  final showMyEntry =
+                      myRank != null && myRank > 50 && myEntry != null;
 
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                     itemCount: players.length + (showMyEntry ? 2 : 0),
                     itemBuilder: (context, i) {
                       if (showMyEntry && i == players.length) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(children: [
-                            Expanded(child: Divider(color: AppColors.border)),
+                            Expanded(child: Divider(color: ac.border)),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Text('Your Rank',
                                   style: TextStyle(
-                                    color: AppColors.textMuted,
-                                    fontFamily: 'Nunito',
+                                    color: ac.textMuted,
+                                    fontFamily: 'Poppins',
                                     fontSize: 11,
                                   )),
                             ),
-                            Expanded(child: Divider(color: AppColors.border)),
+                            Expanded(child: Divider(color: ac.border)),
                           ]),
                         );
                       }
@@ -328,10 +331,15 @@ class _PlayerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ac          = context.ac;
     final name        = player['name']?.toString() ?? 'Player';
     final avatarColor = player['avatar_color']?.toString() ?? '#FF4500';
-    final score       = ((player['wins'] ?? player['weekly_score'] ?? player['score'] ?? 0) as num).toInt();
-    final coins       = (player['coins'] as num?)?.toInt();
+    final score = ((player['wins'] ??
+            player['weekly_score'] ??
+            player['score'] ??
+            0) as num)
+        .toInt();
+    final coins = (player['coins'] as num?)?.toInt();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -343,14 +351,14 @@ class _PlayerTile extends StatelessWidget {
                 AppColors.primary.withValues(alpha: 0.05),
               ])
             : null,
-        color: isMe ? null : AppColors.surface,
+        color: isMe ? null : ac.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isMe
               ? AppColors.primary.withValues(alpha: 0.4)
               : isTop3
                   ? _medalColor.withValues(alpha: 0.25)
-                  : AppColors.border,
+                  : ac.border,
           width: 1,
         ),
         boxShadow: isTop3 && !isMe
@@ -369,8 +377,7 @@ class _PlayerTile extends StatelessWidget {
             width: 38,
             child: isTop3
                 ? Container(
-                    width: 32,
-                    height: 32,
+                    width: 32, height: 32,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [
                         _medalColor.withValues(alpha: 0.8),
@@ -386,16 +393,21 @@ class _PlayerTile extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        rank == 1 ? '🥇' : rank == 2 ? '🥈' : '🥉',
-                        style: const TextStyle(fontSize: 16),
+                        '$rank',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   )
                 : Text(
                     '#$rank',
                     style: TextStyle(
-                      color: isMe ? AppColors.primaryLight : AppColors.textMuted,
-                      fontFamily: 'Nunito',
+                      color: isMe ? AppColors.primaryLight : ac.textMuted,
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -410,8 +422,8 @@ class _PlayerTile extends StatelessWidget {
                 Text(
                   isMe ? '$name (You)' : name,
                   style: TextStyle(
-                    color: isMe ? AppColors.primaryLight : AppColors.textPrimary,
-                    fontFamily: 'Nunito',
+                    color: isMe ? AppColors.primaryLight : ac.textPrimary,
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -429,7 +441,7 @@ class _PlayerTile extends StatelessWidget {
               '$score',
               style: const TextStyle(
                 color: Colors.white,
-                fontFamily: 'Nunito',
+                fontFamily: 'Poppins',
                 fontWeight: FontWeight.w900,
                 fontSize: 22,
               ),

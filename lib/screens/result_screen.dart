@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../app/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/match_provider.dart';
+import '../services/sound_service.dart';
 import '../widgets/coin_display.dart';
 import '../widgets/vs_card.dart';
 
@@ -47,7 +48,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) _coinController.forward();
     });
-    // Refresh user data so coins/stats reflect the completed match
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        if (_isWinner) {
+          SoundService().victory();
+        } else {
+          SoundService().defeat();
+        }
+      }
+    });
     Future.microtask(() {
       if (mounted) ref.read(authProvider.notifier).refreshUser();
     });
@@ -66,18 +75,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authProvider).valueOrNull;
+    final user     = ref.watch(authProvider).valueOrNull;
+    final ac       = context.ac;
+    final size     = MediaQuery.sizeOf(context);
 
     final Color glowColor = _isWinner
         ? AppColors.gold
         : _isTie
             ? AppColors.accent
-            : AppColors.surfaceVariant;
+            : ac.surfaceVariant;
 
     final String headline = _isWinner
-        ? 'Gyaan Guru!'
+        ? 'Gyaan Guru! 🏆'
         : _isTie
-            ? "It's a Tie!"
+            ? "It's a Tie! 🤝"
             : 'Better Luck Next Time';
 
     final String subtext = _isWinner
@@ -91,22 +102,22 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         : [AppColors.primary, AppColors.primaryLight];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: Stack(
         children: [
           // Background radial glow
           Positioned(
-            top: -60,
+            top: -80,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
-                width: 320,
-                height: 320,
+                width: 380,
+                height: 380,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(colors: [
-                    glowColor.withValues(alpha: _isWinner ? 0.18 : 0.08),
+                    glowColor.withValues(alpha: _isWinner ? 0.20 : 0.08),
                     Colors.transparent,
                   ]),
                 ),
@@ -114,89 +125,131 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
             ),
           ),
 
-          // Confetti (winner only)
+          // Confetti for winner (more particles)
           if (_isWinner)
-            ...List.generate(24, (i) {
-              final rng = math.Random(i);
+            ...List.generate(36, (i) {
+              final rng = math.Random(i * 7 + 3);
+              final colors = [
+                AppColors.gold,
+                AppColors.primaryLight,
+                AppColors.correctGreen,
+                AppColors.highlight,
+                AppColors.accent,
+                AppColors.goldLight,
+                Colors.white,
+              ];
               return Positioned(
                 top: -20,
-                left: rng.nextDouble() * MediaQuery.of(context).size.width,
+                left: rng.nextDouble() * size.width,
                 child: Container(
-                  width: 7 + rng.nextDouble() * 7,
-                  height: 7 + rng.nextDouble() * 7,
+                  width: 6 + rng.nextDouble() * 9,
+                  height: 6 + rng.nextDouble() * 9,
                   decoration: BoxDecoration(
-                    color: [
-                      AppColors.gold,
-                      AppColors.primaryLight,
-                      AppColors.correctGreen,
-                      AppColors.highlight,
-                      AppColors.accent,
-                    ][i % 5],
-                    borderRadius: BorderRadius.circular(2),
+                    color: colors[i % colors.length],
+                    borderRadius: BorderRadius.circular(
+                        rng.nextBool() ? 10 : 2),
                   ),
                 )
-                    .animate(delay: (rng.nextDouble() * 600).ms)
+                    .animate(delay: (rng.nextDouble() * 800).ms)
                     .slideY(
                       begin: 0,
-                      end: 18,
-                      duration: (1500 + rng.nextInt(1000)).ms,
+                      end: 22,
+                      duration: (1400 + rng.nextInt(1200)).ms,
+                      curve: Curves.easeIn,
                     )
-                    .fadeOut(delay: 1200.ms, duration: 400.ms),
+                    .rotate(
+                      begin: 0,
+                      end: rng.nextDouble() * 2,
+                      duration: (1400 + rng.nextInt(1200)).ms,
+                    )
+                    .fadeOut(delay: 1400.ms, duration: 400.ms),
               );
             }),
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 16),
-
-                  // ── Result icon ───────────────────────────────────────────
+                  // ── Result icon ─────────────────────────────────────────
                   Center(
-                    child: Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: _isWinner
-                              ? [const Color(0xFFD97706), AppColors.gold]
-                              : _isTie
-                                  ? [AppColors.accentDark, AppColors.accent]
-                                  : [AppColors.surfaceVariant, AppColors.surfaceBright],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: glowColor.withValues(alpha: 0.4),
-                            blurRadius: 28,
-                            spreadRadius: 2,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Outer glow ring (winner only)
+                        if (_isWinner)
+                          Container(
+                            width: AppSizes.sp(context, 108),
+                            height: AppSizes.sp(context, 108),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.gold.withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                            ),
+                          )
+                              .animate(onPlay: (c) => c.repeat())
+                              .scaleXY(
+                                begin: 0.9,
+                                end: 1.15,
+                                duration: 1800.ms,
+                                curve: Curves.easeInOut,
+                              )
+                              .fadeIn()
+                              .then()
+                              .fadeOut(duration: 600.ms),
+                        // Icon circle
+                        Container(
+                          width: AppSizes.sp(context, 88),
+                          height: AppSizes.sp(context, 88),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: _isWinner
+                                  ? [const Color(0xFFD97706), AppColors.gold]
+                                  : _isTie
+                                      ? [AppColors.accentDark, AppColors.accent]
+                                      : [ac.surfaceVariant, ac.surfaceBright],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: glowColor.withValues(alpha: 0.45),
+                                blurRadius: 32,
+                                spreadRadius: 4,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Icon(
-                          _isWinner
-                              ? Icons.emoji_events_rounded
-                              : _isTie
-                                  ? Icons.handshake_rounded
-                                  : Icons.trending_up_rounded,
-                          color: Colors.white,
-                          size: 42,
-                        ),
-                      ),
-                    )
-                        .animate()
-                        .scaleXY(begin: 0.5, end: 1.0, duration: 600.ms, curve: Curves.elasticOut)
-                        .fadeIn(duration: 300.ms),
+                          child: Center(
+                            child: Icon(
+                              _isWinner
+                                  ? Icons.emoji_events_rounded
+                                  : _isTie
+                                      ? Icons.handshake_rounded
+                                      : Icons.trending_up_rounded,
+                              color: Colors.white,
+                              size: 42,
+                            ),
+                          ),
+                        )
+                            .animate()
+                            .scaleXY(
+                              begin: 0.4,
+                              end: 1.0,
+                              duration: 700.ms,
+                              curve: Curves.elasticOut,
+                            )
+                            .fadeIn(duration: 300.ms),
+                      ],
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // ── Headline ──────────────────────────────────────────────
+                  // ── Headline ────────────────────────────────────────────
                   Text(
                     headline,
                     textAlign: TextAlign.center,
@@ -205,10 +258,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ? AppColors.gold
                           : _isTie
                               ? AppColors.accent
-                              : AppColors.textPrimary,
-                      fontFamily: 'Nunito',
+                              : ac.textPrimary,
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w900,
-                      fontSize: 32,
+                      fontSize: AppSizes.sp(context, 28),
                       letterSpacing: -0.5,
                     ),
                   )
@@ -221,46 +274,53 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                   Text(
                     subtext,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontFamily: 'Nunito',
+                    style: TextStyle(
+                      color: ac.textSecondary,
+                      fontFamily: 'Poppins',
                       fontSize: 14,
                     ),
                   ).animate().fadeIn(delay: 350.ms),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 22),
 
-                  // ── Score card ────────────────────────────────────────────
+                  // ── Score card ──────────────────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: ac.surface,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: _isWinner
-                            ? AppColors.gold.withValues(alpha: 0.35)
-                            : AppColors.border,
+                            ? AppColors.gold.withValues(alpha: 0.4)
+                            : ac.border,
                         width: 1,
                       ),
                       boxShadow: _isWinner
                           ? [
                               BoxShadow(
-                                color: AppColors.gold.withValues(alpha: 0.1),
-                                blurRadius: 20,
+                                color: AppColors.gold.withValues(alpha: 0.12),
+                                blurRadius: 24,
                               )
                             ]
-                          : [],
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(
+                                    alpha: context.isDark ? 0.2 : 0.04),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
                     ),
                     child: Column(
                       children: [
-                        const Text(
-                          'Final Score',
+                        Text(
+                          'FINAL SCORE',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontFamily: 'Nunito',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
+                            color: ac.textMuted,
+                            fontFamily: 'Poppins',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -279,50 +339,50 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       .fadeIn(delay: 300.ms, duration: 500.ms)
                       .slideY(begin: 0.15, end: 0),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
-                  // ── Coins earned ──────────────────────────────────────────
+                  // ── Coins earned ────────────────────────────────────────
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [
-                        AppColors.gold.withValues(alpha: 0.1),
+                        AppColors.gold.withValues(alpha: 0.12),
                         AppColors.gold.withValues(alpha: 0.05),
                       ]),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: AppColors.gold.withValues(alpha: 0.3),
+                        color: AppColors.gold.withValues(alpha: 0.35),
                       ),
                     ),
                     child: Column(
                       children: [
-                        const Text(
+                        Text(
                           'COINS EARNED',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontFamily: 'Nunito',
+                            color: ac.textSecondary,
+                            fontFamily: 'Poppins',
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        CoinDisplay(coins: _displayedCoins, fontSize: 30),
+                        const SizedBox(height: 6),
+                        CoinDisplay(coins: _displayedCoins, fontSize: 28),
                       ],
                     ),
                   ).animate().fadeIn(delay: 500.ms),
 
                   const SizedBox(height: 10),
 
-                  // ── Stats row ─────────────────────────────────────────────
+                  // ── Stats row ───────────────────────────────────────────
                   if (user != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: ac.surface,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: ac.border),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -332,13 +392,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                             value: '${user.coins}',
                             color: AppColors.gold,
                           ),
-                          Container(width: 1, height: 32, color: AppColors.border),
+                          Container(width: 1, height: 32, color: ac.border),
                           _StatPill(
                             label: 'Win Streak',
-                            value: _isWinner ? '${user.winStreak + 1} 🔥' : '0 🔥',
-                            color: _isWinner ? AppColors.gold : AppColors.textSecondary,
+                            value: _isWinner ? '${user.winStreak + 1}🔥' : '0',
+                            color: _isWinner ? AppColors.gold : ac.textSecondary,
                           ),
-                          Container(width: 1, height: 32, color: AppColors.border),
+                          Container(width: 1, height: 32, color: ac.border),
                           _StatPill(
                             label: 'Total Wins',
                             value: _isWinner ? '${user.wins + 1}' : '${user.wins}',
@@ -348,9 +408,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       ),
                     ).animate().fadeIn(delay: 650.ms),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
-                  // ── Rematch button ────────────────────────────────────────
+                  // ── Rematch button ──────────────────────────────────────
                   GestureDetector(
                     onTap: _rematch,
                     child: Container(
@@ -366,8 +426,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           BoxShadow(
                             color: (_isWinner ? AppColors.gold : AppColors.primary)
                                 .withValues(alpha: 0.45),
-                            blurRadius: 18,
-                            offset: const Offset(0, 5),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -380,7 +440,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                             'REMATCH',
                             style: TextStyle(
                               color: Colors.white,
-                              fontFamily: 'Nunito',
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w900,
                               fontSize: 17,
                               letterSpacing: 1.2,
@@ -396,7 +456,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
                   const SizedBox(height: 12),
 
-                  // ── Home button ───────────────────────────────────────────
+                  // ── Home button ─────────────────────────────────────────
                   OutlinedButton.icon(
                     onPressed: () {
                       ref.read(matchProvider.notifier).reset();
@@ -406,13 +466,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     label: const Text(
                       'Home',
                       style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontWeight: FontWeight.w700,
-                      ),
+                          fontFamily: 'Poppins', fontWeight: FontWeight.w700),
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: AppColors.border),
+                      side: BorderSide(color: ac.border),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
@@ -439,22 +497,23 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return Column(
       children: [
         Text(
           value,
           style: TextStyle(
             color: color,
-            fontFamily: 'Nunito',
+            fontFamily: 'Poppins',
             fontWeight: FontWeight.w800,
             fontSize: 18,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontFamily: 'Nunito',
+          style: TextStyle(
+            color: ac.textSecondary,
+            fontFamily: 'Poppins',
             fontSize: 11,
           ),
         ),

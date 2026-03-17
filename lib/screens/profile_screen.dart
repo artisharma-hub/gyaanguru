@@ -53,7 +53,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
   }
 
-  void _cancelEditing() => setState(() { _editing = false; _pendingImagePath = null; });
+  void _cancelEditing() =>
+      setState(() { _editing = false; _pendingImagePath = null; });
 
   Future<void> _saveProfile() async {
     final name = _nameController.text.trim();
@@ -90,9 +91,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showImageSourceSheet() {
+    final ac = context.ac;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: ac.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -105,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 width: 40, height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: ac.surfaceVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -117,10 +119,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.camera_alt_outlined, color: AppColors.primaryLight, size: 20),
+                  child: const Icon(Icons.camera_alt_outlined,
+                      color: AppColors.primaryLight, size: 20),
                 ),
-                title: const Text('Camera',
-                    style: TextStyle(color: AppColors.textPrimary, fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
+                title: Text('Camera',
+                    style: TextStyle(
+                        color: ac.textPrimary,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600)),
                 onTap: () => _pickImage(ImageSource.camera),
               ),
               ListTile(
@@ -130,10 +136,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.photo_library_outlined, color: AppColors.primaryLight, size: 20),
+                  child: const Icon(Icons.photo_library_outlined,
+                      color: AppColors.primaryLight, size: 20),
                 ),
-                title: const Text('Gallery',
-                    style: TextStyle(color: AppColors.textPrimary, fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
+                title: Text('Gallery',
+                    style: TextStyle(
+                        color: ac.textPrimary,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600)),
                 onTap: () => _pickImage(ImageSource.gallery),
               ),
               if (_pendingImagePath != null ||
@@ -145,11 +155,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: AppColors.wrongRed.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.delete_outline, color: AppColors.wrongRed, size: 20),
+                    child: const Icon(Icons.delete_outline,
+                        color: AppColors.wrongRed, size: 20),
                   ),
                   title: const Text('Remove Photo',
-                      style: TextStyle(color: AppColors.wrongRed, fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
-                  onTap: () { Navigator.pop(context); setState(() => _pendingImagePath = ''); },
+                      style: TextStyle(
+                          color: AppColors.wrongRed,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _pendingImagePath = '');
+                  },
                 ),
             ],
           ),
@@ -180,20 +197,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _logout() {
+    final ac = context.ac;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: ac.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Logout?',
-            style: TextStyle(color: AppColors.textPrimary, fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
-        content: const Text('Are you sure you want to logout?',
-            style: TextStyle(color: AppColors.textSecondary, fontFamily: 'Nunito')),
+        title: Text('Logout?',
+            style: TextStyle(
+                color: ac.textPrimary,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w800)),
+        content: Text('Are you sure you want to logout?',
+            style: TextStyle(
+                color: ac.textSecondary, fontFamily: 'Poppins')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary, fontFamily: 'Nunito')),
+            child: Text('Cancel',
+                style: TextStyle(
+                    color: ac.textSecondary, fontFamily: 'Poppins')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -202,9 +225,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (!mounted) return;
               context.go('/register');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.wrongRed),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.wrongRed),
             child: const Text('Logout',
-                style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -214,23 +239,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).valueOrNull;
+    final ac   = context.ac;
 
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
+        backgroundColor: ac.background,
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(AppColors.primaryLight),
+            valueColor: const AlwaysStoppedAnimation(AppColors.primaryLight),
           ),
         ),
       );
     }
 
     final displayImagePath = _editing ? _pendingImagePath : user.avatarImagePath;
-    final displayColor     = _editing ? (_selectedColor ?? user.avatarColor) : user.avatarColor;
+    final displayColor     = _editing
+        ? (_selectedColor ?? user.avatarColor)
+        : user.avatarColor;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
       body: Stack(
@@ -256,11 +284,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
               child: Column(
                 children: [
-                  // ── Avatar section ────────────────────────────────────────
+                  // ── Avatar section ───────────────────────────────────────
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Glow ring
                       Container(
                         width: 116, height: 116,
                         decoration: BoxDecoration(
@@ -292,7 +319,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   colors: [AppColors.primary, AppColors.primaryLight],
                                 ),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.background, width: 2),
+                                border: Border.all(color: ac.background, width: 2),
                               ),
                               child: const Icon(Icons.camera_alt_rounded,
                                   color: Colors.white, size: 14),
@@ -302,7 +329,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ],
                   )
                       .animate()
-                      .scaleXY(begin: 0.7, end: 1.0, duration: 500.ms, curve: Curves.elasticOut),
+                      .scaleXY(begin: 0.7, end: 1.0, duration: 500.ms,
+                          curve: Curves.elasticOut),
 
                   const SizedBox(height: 14),
 
@@ -313,23 +341,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: TextField(
                         controller: _nameController,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontFamily: 'Nunito',
+                        style: TextStyle(
+                          color: ac.textPrimary,
+                          fontFamily: 'Poppins',
                           fontWeight: FontWeight.w800,
                           fontSize: 22,
                         ),
                         decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           filled: true,
-                          fillColor: AppColors.surfaceVariant,
+                          fillColor: ac.surfaceVariant,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            borderSide: const BorderSide(
+                                color: AppColors.primary, width: 1.5),
                           ),
                         ),
                       ),
@@ -337,9 +367,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   else
                     Text(
                       user.name,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Nunito',
+                      style: TextStyle(
+                        color: ac.textPrimary,
+                        fontFamily: 'Poppins',
                         fontWeight: FontWeight.w900,
                         fontSize: 24,
                         letterSpacing: -0.3,
@@ -349,9 +379,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _maskPhone(user.phone),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontFamily: 'Nunito',
+                    style: TextStyle(
+                      color: ac.textSecondary,
+                      fontFamily: 'Poppins',
                       fontSize: 13,
                     ),
                   ),
@@ -362,20 +392,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   if (user.winStreak > 0) ...[
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(colors: [
                           AppColors.gold.withValues(alpha: 0.15),
                           AppColors.gold.withValues(alpha: 0.05),
                         ]),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.gold.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: AppColors.gold.withValues(alpha: 0.4)),
                       ),
                       child: Text(
                         '🔥 ${user.winStreak} Win Streak',
                         style: const TextStyle(
                           color: AppColors.gold,
-                          fontFamily: 'Nunito',
+                          fontFamily: 'Poppins',
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
@@ -385,15 +417,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   const SizedBox(height: 18),
 
-                  // ── Color picker (edit mode) ───────────────────────────────
+                  // ── Color picker (edit mode) ──────────────────────────────
                   if (_editing) ...[
-                    const Align(
+                    Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Avatar Color',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontFamily: 'Nunito',
+                          color: ac.textSecondary,
+                          fontFamily: 'Poppins',
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -403,7 +435,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: _avatarColors.map((hex) {
-                        final isSelected = (_selectedColor ?? user.avatarColor) == hex;
+                        final isSelected =
+                            (_selectedColor ?? user.avatarColor) == hex;
                         return GestureDetector(
                           onTap: () => setState(() => _selectedColor = hex),
                           child: AnimatedContainer(
@@ -424,7 +457,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   : [],
                             ),
                             child: isSelected
-                                ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                                ? const Icon(Icons.check_rounded,
+                                    color: Colors.white, size: 18)
                                 : null,
                           ),
                         );
@@ -437,13 +471,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: OutlinedButton(
                             onPressed: _saving ? null : _cancelEditing,
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textSecondary,
-                              side: const BorderSide(color: AppColors.border),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              foregroundColor: ac.textSecondary,
+                              side: BorderSide(color: ac.border),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: const Text('Cancel',
-                                style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
+                                style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600)),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -460,11 +497,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                               child: Center(
                                 child: _saving
-                                    ? const SizedBox(width: 18, height: 18,
-                                        child: CircularProgressIndicator(strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation(Colors.white)))
+                                    ? const SizedBox(
+                                        width: 18, height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation(
+                                              Colors.white),
+                                        ))
                                     : const Text('Save',
-                                        style: TextStyle(color: Colors.white, fontFamily: 'Nunito',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Poppins',
                                             fontWeight: FontWeight.w700)),
                               ),
                             ),
@@ -477,33 +520,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onPressed: _startEditing,
                       icon: const Icon(Icons.edit_rounded, size: 16),
                       label: const Text('Edit Profile',
-                          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700)),
+                          style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primaryLight,
-                        side: const BorderSide(color: AppColors.primary, width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        side: const BorderSide(
+                            color: AppColors.primary, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                       ),
                     ),
                   ],
 
                   const SizedBox(height: 24),
 
-                  // ── Stats ─────────────────────────────────────────────────
+                  // ── Stats card ───────────────────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: ac.surface,
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: ac.border),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'YOUR STATS',
                           style: TextStyle(
-                            color: AppColors.textMuted,
-                            fontFamily: 'Nunito',
+                            color: ac.textMuted,
+                            fontFamily: 'Poppins',
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
@@ -545,23 +592,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   const SizedBox(height: 12),
 
-                  // ── Settings ──────────────────────────────────────────────
+                  // ── Settings card ────────────────────────────────────────
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: ac.surface,
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: ac.border),
                     ),
                     child: Column(
                       children: [
                         SwitchListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                          title: const Text('Sound Effects',
-                              style: TextStyle(color: AppColors.textPrimary,
-                                  fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
-                          subtitle: const Text('Toggle in-game sounds',
-                              style: TextStyle(color: AppColors.textSecondary,
-                                  fontFamily: 'Nunito', fontSize: 12)),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          title: Text('Sound Effects',
+                              style: TextStyle(
+                                  color: ac.textPrimary,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text('Toggle in-game sounds',
+                              style: TextStyle(
+                                  color: ac.textSecondary,
+                                  fontFamily: 'Poppins',
+                                  fontSize: 12)),
                           secondary: Container(
                             width: 36, height: 36,
                             decoration: BoxDecoration(
@@ -574,21 +626,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           value: _soundEnabled,
                           onChanged: (v) => setState(() => _soundEnabled = v),
                         ),
-                        const Divider(color: AppColors.border, height: 1),
+                        Divider(color: ac.border, height: 1),
                         _SettingsTile(
                           icon: Icons.leaderboard_rounded,
                           iconColor: AppColors.primaryLight,
                           title: 'View Leaderboard',
                           onTap: () => context.go('/leaderboard'),
                         ),
-                        const Divider(color: AppColors.border, height: 1),
+                        Divider(color: ac.border, height: 1),
                         _SettingsTile(
                           icon: Icons.today_rounded,
                           iconColor: AppColors.correctGreen,
                           title: 'Daily Challenge',
                           onTap: () => context.go('/daily'),
                         ),
-                        const Divider(color: AppColors.border, height: 1),
+                        Divider(color: ac.border, height: 1),
                         _SettingsTile(
                           icon: Icons.logout_rounded,
                           iconColor: AppColors.wrongRed,
@@ -601,9 +653,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ).animate().fadeIn(delay: 300.ms),
 
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Gyaan Guru v1.0.0',
-                    style: TextStyle(color: AppColors.textMuted, fontFamily: 'Nunito', fontSize: 12),
+                    style: TextStyle(
+                        color: ac.textMuted,
+                        fontFamily: 'Poppins',
+                        fontSize: 12),
                   ),
                 ],
               ),
@@ -620,10 +675,15 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  const _StatCard({required this.label, required this.value, required this.icon, required this.color});
+  const _StatCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return Column(
       children: [
         Container(
@@ -637,18 +697,18 @@ class _StatCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontFamily: 'Nunito',
+          style: TextStyle(
+            color: ac.textPrimary,
+            fontFamily: 'Poppins',
             fontWeight: FontWeight.w900,
             fontSize: 17,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontFamily: 'Nunito',
+          style: TextStyle(
+            color: ac.textSecondary,
+            fontFamily: 'Poppins',
             fontSize: 11,
           ),
         ),
@@ -664,13 +724,16 @@ class _SettingsTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool destructive;
   const _SettingsTile({
-    required this.icon, required this.iconColor,
-    required this.title, required this.onTap,
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.onTap,
     this.destructive = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       leading: Container(
@@ -684,16 +747,16 @@ class _SettingsTile extends StatelessWidget {
       title: Text(
         title,
         style: TextStyle(
-          color: destructive ? AppColors.wrongRed : AppColors.textPrimary,
-          fontFamily: 'Nunito',
+          color: destructive ? AppColors.wrongRed : ac.textPrimary,
+          fontFamily: 'Poppins',
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
       ),
       trailing: destructive
           ? null
-          : const Icon(Icons.arrow_forward_ios_rounded,
-              color: AppColors.textMuted, size: 14),
+          : Icon(Icons.arrow_forward_ios_rounded,
+              color: ac.textMuted, size: 14),
       onTap: onTap,
     );
   }

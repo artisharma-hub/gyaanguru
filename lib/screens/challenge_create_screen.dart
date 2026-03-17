@@ -75,7 +75,7 @@ class _ChallengeCreateScreenState
       appBar: AppBar(
         title: const Text(
           'Challenge a Friend',
-          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
@@ -89,7 +89,7 @@ class _ChallengeCreateScreenState
                   'Pick a Category',
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w800,
                     fontSize: 22,
                   ),
@@ -99,7 +99,7 @@ class _ChallengeCreateScreenState
                   'Your friend will be quizzed on this topic',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontSize: 13,
                   ),
                 ),
@@ -142,7 +142,7 @@ class _ChallengeCreateScreenState
                   label: Text(
                     isLoading ? 'Creating...' : 'Create Challenge Link',
                     style: const TextStyle(
-                      fontFamily: 'Nunito',
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                     ),
@@ -180,7 +180,7 @@ class _ChallengeCreateScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w800,
                     fontSize: 22,
                   ),
@@ -191,7 +191,7 @@ class _ChallengeCreateScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontSize: 14,
                   ),
                 ),
@@ -208,7 +208,7 @@ class _ChallengeCreateScreenState
                         'Share this link:',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontFamily: 'Nunito',
+                          fontFamily: 'Poppins',
                           fontSize: 12,
                         ),
                       ),
@@ -220,7 +220,7 @@ class _ChallengeCreateScreenState
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: AppColors.primary,
-                          fontFamily: 'Nunito',
+                          fontFamily: 'Poppins',
                           fontSize: 13,
                         ),
                       ),
@@ -241,7 +241,7 @@ class _ChallengeCreateScreenState
                         label: const Text(
                           'Share Again',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
+                            fontFamily: 'Poppins',
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -265,7 +265,7 @@ class _ChallengeCreateScreenState
                   ),
                   child: const Text(
                     'Back to Home',
-                    style: TextStyle(fontFamily: 'Nunito'),
+                    style: TextStyle(fontFamily: 'Poppins'),
                   ),
                 ),
               ],

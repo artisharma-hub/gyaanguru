@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/theme.dart';
 import 'app/router.dart';
@@ -16,6 +17,7 @@ Uri? consumePendingDeepLink() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   try {
     _pendingDeepLink = await AppLinks().getInitialLink();
   } catch (_) {}
@@ -61,6 +63,8 @@ class _GyaanGuruAppState extends ConsumerState<GyaanGuruApp> {
       title: 'Gyaan Guru',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       // Clamp system text scaling so layout never breaks on accessibility sizes
       builder: (context, child) {
         final mq = MediaQuery.of(context);

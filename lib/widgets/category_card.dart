@@ -15,124 +15,150 @@ class CategoryCard extends StatelessWidget {
   });
 
   static const _data = {
-    'cricket':   _CategoryData('Cricket & Sports',  Icons.sports_cricket_rounded, AppColors.cricket),
-    'bollywood': _CategoryData('Bollywood & OTT',   Icons.movie_rounded,          AppColors.bollywood),
-    'gk':        _CategoryData('Indian GK',         Icons.public_rounded,         AppColors.gk),
-    'math':      _CategoryData('Rapid Math',        Icons.calculate_rounded,      AppColors.math),
-    'science':   _CategoryData('Science & Tech',    Icons.science_rounded,        AppColors.science),
-    'hindi':     _CategoryData('Hindi Wordplay',    Icons.translate_rounded,      AppColors.hindi),
+    'cricket':   _CategoryData('Cricket & Sports',  Icons.sports_cricket_rounded,    AppColors.cricket),
+    'bollywood': _CategoryData('Bollywood & OTT',   Icons.movie_filter_rounded,      AppColors.bollywood),
+    'gk':        _CategoryData('Indian GK',         Icons.menu_book_rounded,         AppColors.gk),
+    'math':      _CategoryData('Rapid Math',        Icons.functions_rounded,         AppColors.math),
+    'science':   _CategoryData('Science & Tech',    Icons.biotech_rounded,           AppColors.science),
+    'hindi':     _CategoryData('Hindi Wordplay',    Icons.record_voice_over_rounded, AppColors.hindi),
   };
 
   @override
   Widget build(BuildContext context) {
     final d = _data[categoryKey] ?? _data['cricket']!;
+    final ac = context.ac;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
         decoration: isSelected
             ? BoxDecoration(
-                gradient: AppColors.categoryGradient(d.color),
-                borderRadius: BorderRadius.circular(22),
+                gradient: AppColors.categoryGradientRich(d.color),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
-                  BoxShadow(
-                    color: d.color.withValues(alpha: 0.55),
-                    blurRadius: 22,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 5),
-                  ),
+                  BoxShadow(color: d.color.withValues(alpha: 0.42), blurRadius: 22, spreadRadius: 1, offset: const Offset(0, 8)),
+                  BoxShadow(color: d.color.withValues(alpha: 0.16), blurRadius: 38, offset: const Offset(0, 16)),
                 ],
               )
             : BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: AppColors.border,
-                  width: 1.0,
-                ),
+                color: ac.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: ac.border, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: d.color.withValues(alpha: context.isDark ? 0.12 : 0.07),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
         child: Stack(
           children: [
-            // Top-right accent dot when not selected
             if (!isSelected)
               Positioned(
-                top: 10,
-                right: 10,
+                bottom: -8,
+                right: -8,
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: d.color.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
+                    color: d.color.withValues(alpha: context.isDark ? 0.10 : 0.07),
                   ),
                 ),
               ),
-
-            // Content — Positioned.fill so mainAxisAlignment.center truly centers
-            Positioned.fill(
-              child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Icon circle with pulse animation when not selected
-                Container(
-                  width: 68,
-                  height: 68,
+            if (!isSelected)
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(color: d.color.withValues(alpha: 0.55), shape: BoxShape.circle),
+                ),
+              ),
+            if (isSelected)
+              Positioned(
+                top: -28,
+                right: -18,
+                child: Container(
+                  width: 88,
+                  height: 88,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.white.withValues(alpha: 0.22)
-                        : d.color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: d.color.withValues(alpha: 0.4),
-                              blurRadius: 16,
-                              spreadRadius: 2,
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Icon(
-                    d.icon,
-                    color: isSelected ? Colors.white : d.color,
-                    size: 38,
-                  ),
-                )
-                    .animate(
-                      onPlay: (c) => c.repeat(reverse: true),
-                    )
-                    .scaleXY(
-                      begin: 1.0,
-                      end: isSelected ? 1.06 : 1.04,
-                      duration: 1400.ms,
-                      curve: Curves.easeInOut,
-                    ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    d.name,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12.5,
-                      height: 1.2,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.11),
                   ),
                 ),
-              ],
+              ),
+            Positioned.fill(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildIcon(d),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      d.name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : ac.textPrimary,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        height: 1.25,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ),  // Positioned.fill
           ],
         ),
       )
-          .animate(target: isSelected ? 1 : 0)
-          .scaleXY(end: 1.04, duration: 200.ms),
+          .animate(key: ValueKey(isSelected))
+          .scaleXY(begin: isSelected ? 0.91 : 1.0, end: 1.0, duration: 380.ms, curve: Curves.elasticOut),
     );
+  }
+
+  Widget _buildIcon(_CategoryData d) {
+    final iconWidget = Container(
+      width: 68,
+      height: 68,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: isSelected
+            ? LinearGradient(
+                colors: [Colors.white.withValues(alpha: 0.28), Colors.white.withValues(alpha: 0.10)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : LinearGradient(
+                colors: [d.color.withValues(alpha: 0.18), d.color.withValues(alpha: 0.07)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        boxShadow: isSelected
+            ? [BoxShadow(color: Colors.white.withValues(alpha: 0.22), blurRadius: 10, spreadRadius: 1)]
+            : [BoxShadow(color: d.color.withValues(alpha: 0.14), blurRadius: 9, offset: const Offset(0, 3))],
+      ),
+      child: Icon(d.icon, color: isSelected ? Colors.white : d.color, size: 34),
+    );
+
+    if (isSelected) {
+      return iconWidget
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .scaleXY(begin: 1.0, end: 1.08, duration: 900.ms, curve: Curves.easeInOut)
+          .shimmer(color: Colors.white.withValues(alpha: 0.18), duration: 1800.ms);
+    }
+
+    return iconWidget
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .moveY(begin: 0, end: -4, duration: 1800.ms, curve: Curves.easeInOut);
   }
 }
 

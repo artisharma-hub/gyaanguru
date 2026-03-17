@@ -113,8 +113,9 @@ async def submit_daily(
     )
     db.add(submission)
 
-    # Award coins
-    user.coins += max(5, score // 2)
+    # Award coins: 75 base for completing + 200 bonus for top-10 rank
+    coins_earned = 75 + (200 if rank <= 10 else 0)
+    user.coins += coins_earned
     user.weekly_score += score
 
-    return {"score": score, "rank": rank}
+    return {"score": score, "rank": rank, "coins_earned": coins_earned}

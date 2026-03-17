@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../app/theme.dart';
 import '../models/match_state.dart';
 import '../providers/auth_provider.dart';
 import '../providers/match_provider.dart';
+import '../services/sound_service.dart';
 import '../widgets/answer_button.dart';
 import '../widgets/vs_card.dart';
 
@@ -25,7 +27,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   double _timeLeft = 10.0;
   bool _timerActive = false;
   bool _navigated = false;
+  bool _timerWarnPlayed = false;
   DateTime? _questionStartTime;
+  final _sound = SoundService();
 
   static const _questionDuration = 10.0;
 
@@ -59,6 +63,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   void _startTimer() {
     _questionTimer?.cancel();
+    _timerWarnPlayed = false;
     setState(() {
       _timeLeft = _questionDuration;
       _timerActive = true;
@@ -68,6 +73,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (!mounted) { t.cancel(); return; }
       setState(() {
         _timeLeft -= 0.05;
+        if (_timeLeft <= 3 && !_timerWarnPlayed) {
+          _timerWarnPlayed = true;
+          _sound.timerWarning();
+        }
         if (_timeLeft <= 0) {
           _timeLeft = 0;
           _timerActive = false;
@@ -83,6 +92,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   void _onAnswerTap(String option) {
     if (!_timerActive) return;
+    _sound.click();
     _questionTimer?.cancel();
     setState(() => _timerActive = false);
     final elapsed = _questionStartTime != null
@@ -102,10 +112,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   @override
   Widget build(BuildContext context) {
-    final matchState     = ref.watch(matchProvider);
-    final user           = ref.watch(authProvider).valueOrNull;
-    final categoryColor  = _categoryColors[widget.category] ?? AppColors.primary;
-    final timerFraction  = (_timeLeft / _questionDuration).clamp(0.0, 1.0);
+    final matchState    = ref.watch(matchProvider);
+    final user          = ref.watch(authProvider).valueOrNull;
+    final categoryColor = _categoryColors[widget.category] ?? AppColors.primary;
+    final ac            = context.ac;
 
     ref.listen(matchProvider, (prev, next) {
       if (next.phase == MatchPhase.playing &&
@@ -113,23 +123,31 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               prev?.phase != MatchPhase.playing)) {
         _startTimer();
       }
+      if (prev?.correctOption == null && next.correctOption != null) {
+        final wasCorrect = next.selectedOption == next.correctOption;
+        if (wasCorrect) {
+          _sound.correct();
+        } else {
+          _sound.wrong();
+        }
+      }
       if (next.phase == MatchPhase.finished && !_navigated) {
         _navigated = true;
         final router = GoRouter.of(context);
         Future.delayed(const Duration(milliseconds: 500), () {
           if (!mounted) return;
           router.go('/result', extra: {
-            'isWinner':              next.isWinner,
-            'isTie':                 next.isTie,
-            'myScore':               next.myScore,
-            'opponentScore':         next.opponentScore,
-            'opponentName':          next.opponentName ?? 'Opponent',
-            'opponentAvatarColor':   next.opponentAvatarColor ?? '#FF4500',
-            'coinsEarned':           next.coinsEarned,
-            'matchId':               next.matchId,
-            'category':              widget.category,
-            'myName':                user?.name ?? 'You',
-            'myAvatarColor':         user?.avatarColor ?? '#FF4500',
+            'isWinner':             next.isWinner,
+            'isTie':                next.isTie,
+            'myScore':              next.myScore,
+            'opponentScore':        next.opponentScore,
+            'opponentName':         next.opponentName ?? 'Opponent',
+            'opponentAvatarColor':  next.opponentAvatarColor ?? '#FF4500',
+            'coinsEarned':          next.coinsEarned,
+            'matchId':              next.matchId,
+            'category':             widget.category,
+            'myName':               user?.name ?? 'You',
+            'myAvatarColor':        user?.avatarColor ?? '#FF4500',
           });
         });
       }
@@ -141,7 +159,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     if (matchState.phase == MatchPhase.error) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: ac.background,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -160,9 +178,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               Text(
                 matchState.errorMessage ?? 'Connection lost',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontFamily: 'Nunito',
+                style: TextStyle(
+                  color: ac.textPrimary,
+                  fontFamily: 'Poppins',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -178,13 +196,34 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       );
     }
 
-    final q = matchState.currentQuestion;
+    final q             = matchState.currentQuestion;
+    final timerFraction = (_timeLeft / _questionDuration).clamp(0.0, 1.0);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: Stack(
         children: [
-          // Category color top accent
+          // Subtle category-colored background glow top
+          Positioned(
+            top: -40,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    categoryColor.withValues(alpha: context.isDark ? 0.14 : 0.08),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Category color top accent bar
           Positioned(
             top: 0,
             left: 0,
@@ -205,23 +244,31 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
           SafeArea(
             child: q == null
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(AppColors.primaryLight),
+                      valueColor: AlwaysStoppedAnimation(categoryColor),
+                      strokeWidth: 3,
                     ),
                   )
                 : Column(
                     children: [
-                      // ── Score header ──────────────────────────────────────
+                      // ── Score header ────────────────────────────────────
                       Container(
-                        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: ac.surface,
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                              color: AppColors.border, width: 1),
+                              color: categoryColor.withValues(alpha: 0.2), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: categoryColor.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: VsCard(
                           myName: user?.name ?? 'You',
@@ -234,12 +281,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         ),
                       ),
 
-                      // ── Q indicator + time ────────────────────────────────
+                      // ── Q indicator row + circular timer ───────────────
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Category badge
+                            // Category + question badge
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 5),
@@ -251,59 +299,36 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 ),
                               ),
                               child: Text(
-                                'Q${matchState.currentQuestionIndex + 1} / 10',
+                                '${widget.category.toUpperCase()}  ·  Q${matchState.currentQuestionIndex + 1}/10',
                                 style: TextStyle(
                                   color: categoryColor,
-                                  fontFamily: 'Nunito',
+                                  fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
                             const Spacer(),
-                            // Timer text
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: _timerColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _timerColor.withValues(alpha: 0.4),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.timer_rounded,
-                                      color: _timerColor, size: 14),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${_timeLeft.toStringAsFixed(1)}s',
-                                    style: TextStyle(
-                                      color: _timerColor,
-                                      fontFamily: 'Nunito',
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            // Circular arc timer
+                            _CircularTimer(
+                              fraction: timerFraction,
+                              color: _timerColor,
+                              timeLeft: _timeLeft,
                             ),
                           ],
                         ),
                       ),
 
-                      // ── Timer progress bar ────────────────────────────────
+                      // ── Thin linear progress bar (secondary indicator) ─
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             return Container(
-                              height: 6,
+                              height: 4,
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceVariant,
-                                borderRadius: BorderRadius.circular(3),
+                                color: ac.surfaceVariant,
+                                borderRadius: BorderRadius.circular(2),
                               ),
                               child: Stack(
                                 children: [
@@ -317,11 +342,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                           _timerColor,
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(3),
+                                      borderRadius: BorderRadius.circular(2),
                                       boxShadow: [
                                         BoxShadow(
                                           color: _timerColor.withValues(alpha: 0.5),
-                                          blurRadius: 6,
+                                          blurRadius: 4,
                                         ),
                                       ],
                                     ),
@@ -333,43 +358,56 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         ),
                       ),
 
-                      // ── Question text ─────────────────────────────────────
+                      // ── Question card ───────────────────────────────────
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Container(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
                             width: double.infinity,
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(20),
+                              color: ac.surface,
+                              borderRadius: BorderRadius.circular(22),
                               border: Border.all(
-                                color: categoryColor.withValues(alpha: 0.2),
-                                width: 1,
+                                color: _timeLeft <= 3
+                                    ? AppColors.timerDanger.withValues(alpha: 0.5)
+                                    : categoryColor.withValues(alpha: 0.22),
+                                width: _timeLeft <= 3 ? 2 : 1.5,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (_timeLeft <= 3
+                                          ? AppColors.timerDanger
+                                          : categoryColor)
+                                      .withValues(alpha: _timeLeft <= 3 ? 0.18 : 0.08),
+                                  blurRadius: _timeLeft <= 3 ? 24 : 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Center(
                               child: Text(
                                 q.questionText,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontFamily: 'Nunito',
+                                style: TextStyle(
+                                  color: ac.textPrimary,
+                                  fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 19,
+                                  fontSize: AppSizes.sp(context, 18),
                                   height: 1.4,
                                 ),
                               )
                                   .animate(key: ValueKey(q.id))
                                   .fadeIn(duration: 300.ms)
-                                  .slideY(begin: 0.1, end: 0),
+                                  .slideY(begin: 0.08, end: 0),
                             ),
                           ),
                         ),
                       ),
 
-                      // ── Answer buttons ────────────────────────────────────
+                      // ── Answer buttons ──────────────────────────────────
                       Expanded(
                         flex: 3,
                         child: Padding(
@@ -378,7 +416,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             crossAxisCount: 2,
                             crossAxisSpacing: 10,
                             mainAxisSpacing: 10,
-                            childAspectRatio: 2.0,
+                            childAspectRatio: 1.9,
                             physics: const NeverScrollableScrollPhysics(),
                             children: ['A', 'B', 'C', 'D'].map((opt) {
                               final label = q.options[opt] ?? '';
@@ -415,7 +453,92 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   }
 }
 
-// ── Countdown screen ────────────────────────────────────────────────────────────
+// ── Circular Arc Timer ───────────────────────────────────────────────────────
+class _CircularTimer extends StatelessWidget {
+  final double fraction;
+  final Color color;
+  final double timeLeft;
+
+  const _CircularTimer({
+    required this.fraction,
+    required this.color,
+    required this.timeLeft,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDanger = timeLeft <= 3;
+    return SizedBox(
+      width: 60,
+      height: 60,
+      child: CustomPaint(
+        painter: _ArcTimerPainter(fraction: fraction, color: color),
+        child: Center(
+          child: Text(
+            timeLeft <= 0 ? '0' : timeLeft.ceil().toString(),
+            style: TextStyle(
+              color: color,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          )
+              .animate(
+                key: ValueKey(timeLeft.ceil()),
+                onPlay: isDanger ? (c) => c.repeat(reverse: true) : null,
+              )
+              .scaleXY(
+                begin: isDanger ? 1.0 : 0.7,
+                end: isDanger ? 1.15 : 1.0,
+                duration: isDanger ? 400.ms : 200.ms,
+                curve: Curves.elasticOut,
+              ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArcTimerPainter extends CustomPainter {
+  final double fraction;
+  final Color color;
+
+  const _ArcTimerPainter({required this.fraction, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 5;
+
+    // Track
+    final trackPaint = Paint()
+      ..color = color.withValues(alpha: 0.15)
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // Progress arc
+    final arcPaint = Paint()
+      ..color = color
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi * fraction,
+      false,
+      arcPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ArcTimerPainter old) =>
+      old.fraction != fraction || old.color != color;
+}
+
+// ── Countdown screen ─────────────────────────────────────────────────────────
 class _CountdownScreen extends StatelessWidget {
   final int countdown;
   const _CountdownScreen({required this.countdown});
@@ -423,20 +546,21 @@ class _CountdownScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isGo = countdown <= 0;
+    final ac   = context.ac;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: Stack(
         children: [
-          // Glow behind number
+          // Radial glow
           Center(
             child: Container(
-              width: 220,
-              height: 220,
+              width: 280,
+              height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(colors: [
                   (isGo ? AppColors.correctGreen : AppColors.primary)
-                      .withValues(alpha: 0.2),
+                      .withValues(alpha: 0.22),
                   Colors.transparent,
                 ]),
               ),
@@ -446,11 +570,11 @@ class _CountdownScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'Battle starts in',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    color: ac.textSecondary,
+                    fontFamily: 'Poppins',
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
@@ -466,7 +590,7 @@ class _CountdownScreen extends StatelessWidget {
                     isGo ? 'GO!' : '$countdown',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontFamily: 'Nunito',
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w900,
                       fontSize: 110,
                       height: 1,
@@ -475,9 +599,9 @@ class _CountdownScreen extends StatelessWidget {
                 )
                     .animate(key: ValueKey(countdown))
                     .scaleXY(
-                      begin: 1.5,
+                      begin: 1.6,
                       end: 1.0,
-                      duration: 400.ms,
+                      duration: 450.ms,
                       curve: Curves.elasticOut,
                     )
                     .fadeIn(duration: 200.ms),

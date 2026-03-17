@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const _baseUrl = 'http://192.168.100.53:8000';
+String get _baseUrl => dotenv.env['BASE_URL'] ?? 'http://192.168.100.53:8000';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();

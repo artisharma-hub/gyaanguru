@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../app/theme.dart';
 
 class VsCard extends StatelessWidget {
@@ -22,7 +23,11 @@ class VsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final myWinning  = myScore > opponentScore;
+    final oppWinning = opponentScore > myScore;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: _PlayerInfo(
@@ -30,35 +35,60 @@ class VsCard extends StatelessWidget {
             avatarColor: myAvatarColor,
             score: myScore,
             isMe: true,
+            isWinning: myWinning,
           ),
         ),
-        // VS badge with gradient
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryLight],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
-              ),
+        // VS badge
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primary, AppColors.primaryLight],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'VS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .scaleXY(begin: 0.95, end: 1.05, duration: 900.ms, curve: Curves.easeInOut),
+              if (myWinning || oppWinning) ...[
+                const SizedBox(height: 6),
+                Text(
+                  myWinning ? '←' : '→',
+                  style: TextStyle(
+                    color: AppColors.correctGreen.withValues(alpha: 0.8),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ).animate(onPlay: (c) => c.repeat(reverse: true))
+                    .fadeIn(duration: 400.ms)
+                    .then(delay: 200.ms)
+                    .fadeOut(duration: 400.ms),
+              ],
             ],
-          ),
-          child: const Text(
-            'VS',
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'Nunito',
-              fontWeight: FontWeight.w900,
-              fontSize: 16,
-              letterSpacing: 1,
-            ),
           ),
         ),
         Expanded(
@@ -67,6 +97,7 @@ class VsCard extends StatelessWidget {
             avatarColor: opponentAvatarColor,
             score: opponentScore,
             isMe: false,
+            isWinning: oppWinning,
           ),
         ),
       ],
@@ -79,58 +110,106 @@ class _PlayerInfo extends StatelessWidget {
   final String avatarColor;
   final int score;
   final bool isMe;
+  final bool isWinning;
 
   const _PlayerInfo({
     required this.name,
     required this.avatarColor,
     required this.score,
     required this.isMe,
+    required this.isWinning,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return Column(
-      crossAxisAlignment:
-          isMe ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      crossAxisAlignment: isMe ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
         Row(
-          mainAxisAlignment:
-              isMe ? MainAxisAlignment.start : MainAxisAlignment.end,
+          mainAxisAlignment: isMe ? MainAxisAlignment.start : MainAxisAlignment.end,
           children: [
             if (isMe) AvatarWidget(name: name, avatarColor: avatarColor),
             if (isMe) const SizedBox(width: 8),
             Flexible(
-              child: Text(
-                name,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontFamily: 'Nunito',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
+              child: Column(
+                crossAxisAlignment: isMe ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isWinning ? AppColors.primaryLight : ac.textSecondary,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                  if (isMe)
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: const Text(
+                        'YOU',
+                        style: TextStyle(
+                          color: AppColors.primaryLight,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 9,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             if (!isMe) const SizedBox(width: 8),
             if (!isMe) AvatarWidget(name: name, avatarColor: avatarColor),
           ],
         ),
-        const SizedBox(height: 4),
-        ShaderMask(
-          shaderCallback: (b) => const LinearGradient(
-            colors: [AppColors.gold, AppColors.goldLight],
-          ).createShader(b),
-          child: Text(
-            '$score',
-            textAlign: isMe ? TextAlign.left : TextAlign.right,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'Nunito',
-              fontWeight: FontWeight.w900,
-              fontSize: 32,
+        const SizedBox(height: 6),
+        AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 300),
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w900,
+            fontSize: isWinning ? 36 : 32,
+          ),
+          child: ShaderMask(
+            shaderCallback: (b) => LinearGradient(
+              colors: isWinning
+                  ? [AppColors.gold, AppColors.goldLight]
+                  : [AppColors.gold.withValues(alpha: 0.7), AppColors.gold.withValues(alpha: 0.5)],
+            ).createShader(b),
+            child: Text(
+              '$score',
+              textAlign: isMe ? TextAlign.left : TextAlign.right,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ),
+        if (isWinning)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              'Leading',
+              textAlign: isMe ? TextAlign.left : TextAlign.right,
+              style: TextStyle(
+                color: AppColors.correctGreen.withValues(alpha: 0.9),
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                fontSize: 10,
+              ),
+            ),
+          ).animate().fadeIn(duration: 300.ms),
       ],
     );
   }
@@ -168,10 +247,10 @@ class AvatarWidget extends StatelessWidget {
         height: radius * 2,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: base.withValues(alpha: 0.6),
-            width: 2,
-          ),
+          border: Border.all(color: base.withValues(alpha: 0.6), width: 2),
+          boxShadow: [
+            BoxShadow(color: base.withValues(alpha: 0.3), blurRadius: 8),
+          ],
         ),
         child: CircleAvatar(
           radius: radius,
@@ -191,19 +270,13 @@ class AvatarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [base, base.withValues(alpha: 0.7)],
+          colors: [base, base.withValues(alpha: 0.65)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(
-          color: base.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
+        border: Border.all(color: base.withValues(alpha: 0.55), width: 1.5),
         boxShadow: [
-          BoxShadow(
-            color: base.withValues(alpha: 0.3),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: base.withValues(alpha: 0.35), blurRadius: 10, spreadRadius: 1),
         ],
       ),
       child: Center(
@@ -211,9 +284,10 @@ class AvatarWidget extends StatelessWidget {
           initials,
           style: TextStyle(
             color: Colors.white,
-            fontFamily: 'Nunito',
+            fontFamily: 'Poppins',
             fontWeight: FontWeight.w800,
             fontSize: radius * 0.65,
+            shadows: const [Shadow(color: Colors.black26, blurRadius: 4)],
           ),
         ),
       ),

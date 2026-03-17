@@ -32,7 +32,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     _navigated = true;
     final user = authState.valueOrNull;
 
-    // Cold-start deep link (e.g. gyaanguru:///challenge/accept/TOKEN)
     final pendingLink = consumePendingDeepLink();
     if (pendingLink != null && user != null && pendingLink.scheme == 'gyaanguru') {
       final segs = pendingLink.pathSegments;
@@ -54,11 +53,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: Stack(
         children: [
-          // Radial background glow
+          // Background glows
           Positioned(
             top: -100,
             left: -80,
@@ -67,12 +68,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 380,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.18),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: [
+                  AppColors.primary.withValues(alpha: context.isDark ? 0.22 : 0.16),
+                  Colors.transparent,
+                ]),
               ),
             ),
           ),
@@ -84,12 +83,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 320,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.accent.withValues(alpha: 0.12),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: [
+                  AppColors.accent.withValues(alpha: context.isDark ? 0.18 : 0.10),
+                  Colors.transparent,
+                ]),
               ),
             ),
           ),
@@ -99,7 +96,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo with glow rings
+                // Logo with pulsing rings
                 Stack(
                   alignment: Alignment.center,
                   children: [
@@ -150,7 +147,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                         borderRadius: BorderRadius.circular(26),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.6),
+                            color: AppColors.primary.withValues(alpha: 0.55),
                             blurRadius: 32,
                             spreadRadius: 4,
                           ),
@@ -161,15 +158,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                           'G',
                           style: TextStyle(
                             color: Colors.white,
-                            fontFamily: 'Nunito',
+                            fontFamily: 'Poppins',
                             fontWeight: FontWeight.w900,
                             fontSize: 50,
-                            shadows: [
-                              Shadow(
-                                color: Colors.white38,
-                                blurRadius: 12,
-                              ),
-                            ],
+                            shadows: [Shadow(color: Colors.white38, blurRadius: 12)],
                           ),
                         ),
                       ),
@@ -182,16 +174,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                 const SizedBox(height: 28),
 
-                // Title
+                // Title with gradient
                 ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [AppColors.textPrimary, AppColors.primaryLight],
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [ac.textPrimary, AppColors.primaryLight],
                   ).createShader(bounds),
                   child: const Text(
                     'Gyaan Guru',
                     style: TextStyle(
                       color: Colors.white,
-                      fontFamily: 'Nunito',
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w900,
                       fontSize: 36,
                       letterSpacing: -0.5,
@@ -207,8 +199,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 Text(
                   'Knowledge is Power',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    color: ac.textSecondary,
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w500,
                     fontSize: 15,
                     letterSpacing: 0.5,

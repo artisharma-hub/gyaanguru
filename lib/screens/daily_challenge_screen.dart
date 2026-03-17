@@ -36,6 +36,7 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
   bool _showResult = false;
   int? _finalScore;
   int? _rank;
+  int? _coinsEarned;
   String? _alreadyPlayedRank;
 
   @override
@@ -52,7 +53,7 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
 
   Future<void> _loadDaily() async {
     try {
-      final data = await _api.getDailyChallenge();
+      final data  = await _api.getDailyChallenge();
       final rawQs = data['questions'] as List? ?? [];
       setState(() {
         _questions = rawQs
@@ -75,14 +76,11 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     setState(() {
       _timeLeft = 10.0;
       _selectedOption = null;
-      _correctOption = null;
-      _showResult = false;
+      _correctOption  = null;
+      _showResult     = false;
     });
     _timer = Timer.periodic(const Duration(milliseconds: 50), (t) {
-      if (!mounted) {
-        t.cancel();
-        return;
-      }
+      if (!mounted) { t.cancel(); return; }
       setState(() {
         _timeLeft -= 0.05;
         if (_timeLeft <= 0) {
@@ -99,7 +97,7 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     _answers[q.id] = '';
     setState(() {
       _correctOption = q.correctOption;
-      _showResult = true;
+      _showResult    = true;
     });
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) _nextQuestion();
@@ -113,8 +111,8 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     _answers[q.id] = option;
     setState(() {
       _selectedOption = option;
-      _correctOption = q.correctOption;
-      _showResult = true;
+      _correctOption  = q.correctOption;
+      _showResult     = true;
     });
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) _nextQuestion();
@@ -136,13 +134,15 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
       final result = await _api.submitDailyChallenge(_date, _answers);
       if (!mounted) return;
       setState(() {
-        _finalScore = (result['score'] as num?)?.toInt();
-        _rank = (result['rank'] as num?)?.toInt();
+        _finalScore   = (result['score'] as num?)?.toInt();
+        _rank         = (result['rank'] as num?)?.toInt();
+        _coinsEarned  = (result['coins_earned'] as num?)?.toInt();
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _finalScore = _answers.values.where((v) => v.isNotEmpty).length * 10;
+        _finalScore  = _answers.values.where((v) => v.isNotEmpty).length * 10;
+        _coinsEarned = 75;
       });
     }
   }
@@ -157,19 +157,27 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
   }
 
   Duration get _timeToMidnight {
-    final now = DateTime.now();
+    final now      = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day + 1);
     return midnight.difference(now);
   }
 
+  Color get _timerColor {
+    if (_timeLeft <= 3) return AppColors.timerDanger;
+    if (_timeLeft <= 5) return AppColors.gold;
+    return AppColors.timerSafe;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
+
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
+        backgroundColor: ac.background,
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(AppColors.primary),
+            valueColor: const AlwaysStoppedAnimation(AppColors.primary),
           ),
         ),
       );
@@ -179,6 +187,7 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
       return _ResultView(
         score: _finalScore ?? 0,
         rank: _rank,
+        coinsEarned: _coinsEarned ?? 75,
         date: _todayFormatted,
         onGoHome: () => context.go('/home'),
       );
@@ -186,8 +195,9 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
 
     if (_alreadyPlayedRank != null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: ac.background,
         appBar: AppBar(
+          backgroundColor: ac.background,
           leading: BackButton(onPressed: () => context.go('/home')),
         ),
         body: Center(
@@ -199,12 +209,12 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
                 const Icon(Icons.check_circle,
                     color: AppColors.correctGreen, size: 72),
                 const SizedBox(height: 20),
-                const Text(
-                  "You've already played today's challenge!",
+                Text(
+                  "You've already played today!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Nunito',
+                    color: ac.textPrimary,
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w700,
                     fontSize: 22,
                   ),
@@ -214,17 +224,17 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
                   'Your rank: #$_alreadyPlayedRank',
                   style: const TextStyle(
                     color: AppColors.gold,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w800,
                     fontSize: 24,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Come back tomorrow!',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    color: ac.textSecondary,
+                    fontFamily: 'Poppins',
                     fontSize: 15,
                   ),
                 ),
@@ -237,8 +247,9 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
 
     if (!_started) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: ac.background,
         appBar: AppBar(
+          backgroundColor: ac.background,
           leading: BackButton(onPressed: () => context.go('/home')),
         ),
         body: Padding(
@@ -246,14 +257,17 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Date card with gradient
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primary.withValues(alpha: 0.3),
-                      AppColors.surface,
+                      AppColors.primary.withValues(alpha: 0.22),
+                      ac.surface,
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
@@ -262,64 +276,88 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.today,
-                        color: AppColors.primary, size: 48),
+                    Container(
+                      width: 56, height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryLight],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.4),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.today_rounded,
+                          color: Colors.white, size: 28),
+                    ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       "Today's Challenge",
                       style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontFamily: 'Nunito',
+                        color: ac.textSecondary,
+                        fontFamily: 'Poppins',
                         fontSize: 14,
                       ),
                     ),
                     Text(
                       _todayFormatted,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Nunito',
+                      style: TextStyle(
+                        color: ac.textPrimary,
+                        fontFamily: 'Poppins',
                         fontWeight: FontWeight.w800,
-                        fontSize: 22,
+                        fontSize: 20,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.timer_outlined,
-                            color: AppColors.textSecondary, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Resets in ${_timeToMidnight.inHours}h '
-                          '${_timeToMidnight.inMinutes.remainder(60)}m',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontFamily: 'Nunito',
-                            fontSize: 13,
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: ac.surfaceVariant,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timer_outlined,
+                              color: ac.textSecondary, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Resets in ${_timeToMidnight.inHours}h '
+                            '${_timeToMidnight.inMinutes.remainder(60)}m',
+                            style: TextStyle(
+                              color: ac.textSecondary,
+                              fontFamily: 'Poppins',
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1, end: 0),
+
+              const SizedBox(height: 20),
+
+              // Rules card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  color: ac.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: ac.border),
                 ),
                 child: Column(
                   children: [
                     _RuleRow(
                       icon: Icons.quiz_outlined,
-                      text:
-                          '${_questions.length} questions — same for everyone',
+                      text: '${_questions.length} questions — same for everyone',
                     ),
-                    _RuleRow(
-                        icon: Icons.timer,
-                        text: '10 seconds per question'),
+                    _RuleRow(icon: Icons.timer, text: '10 seconds per question'),
                     _RuleRow(
                         icon: Icons.monetization_on,
                         text: '+75 coins for completing'),
@@ -331,69 +369,124 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
                         text: 'Can only be played once today'),
                   ],
                 ),
-              ),
+              ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
+
               const Spacer(),
-              ElevatedButton(
-                onPressed: () {
+
+              GestureDetector(
+                onTap: () {
                   setState(() => _started = true);
                   _startTimer();
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primaryDark, AppColors.primary,
+                          AppColors.primaryLight],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.45),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_arrow_rounded,
+                          color: Colors.white, size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Start Challenge',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Text(
-                  'Start Challenge',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 17,
-                  ),
-                ),
-              ),
+              ).animate(delay: 300.ms).fadeIn().slideY(begin: 0.2, end: 0),
             ],
           ),
         ),
       );
     }
 
-    // Playing
-    final q = _questions[_currentIndex];
+    // ── Playing ─────────────────────────────────────────────────────────────
+    final q             = _questions[_currentIndex];
+    final timerFraction = (_timeLeft / 10.0).clamp(0.0, 1.0);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: SafeArea(
         child: Column(
           children: [
+            // Q indicator + timer
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
-                  Text(
-                    'Q${_currentIndex + 1}/${_questions.length}',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontFamily: 'Nunito',
-                      fontSize: 14,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'Q${_currentIndex + 1}/${_questions.length}',
+                      style: const TextStyle(
+                        color: AppColors.primaryLight,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    '${_timeLeft.toStringAsFixed(1)}s',
-                    style: TextStyle(
-                      color: _timeLeft <= 3
-                          ? AppColors.timerDanger
-                          : AppColors.timerSafe,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _timerColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: _timerColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.timer_rounded,
+                            color: _timerColor, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_timeLeft.toStringAsFixed(1)}s',
+                          style: TextStyle(
+                            color: _timerColor,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
+
+            // Progress bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: LayoutBuilder(
@@ -401,42 +494,66 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
                   borderRadius: BorderRadius.circular(4),
                   child: Stack(
                     children: [
-                      Container(
-                          height: 6, color: AppColors.surfaceVariant),
+                      Container(height: 5, color: ac.surfaceVariant),
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 50),
-                        height: 6,
-                        width: constraints.maxWidth *
-                            (_timeLeft / 10.0).clamp(0.0, 1.0),
-                        color: _timeLeft <= 3
-                            ? AppColors.timerDanger
-                            : AppColors.timerSafe,
+                        height: 5,
+                        width: constraints.maxWidth * timerFraction,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [
+                            _timerColor.withValues(alpha: 0.7),
+                            _timerColor,
+                          ]),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _timerColor.withValues(alpha: 0.5),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
+
+            // Question
             Expanded(
               flex: 2,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(
-                    q.questionText,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 20,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: ac.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                      ),
                     ),
-                  )
-                      .animate(key: ValueKey(_currentIndex))
-                      .fadeIn(duration: 300.ms),
+                    child: Center(
+                      child: Text(
+                        q.questionText,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: ac.textPrimary,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      )
+                          .animate(key: ValueKey(_currentIndex))
+                          .fadeIn(duration: 300.ms),
+                    ),
+                  ),
                 ),
               ),
             ),
+
+            // Answer buttons
             Expanded(
               flex: 3,
               child: Padding(
@@ -482,6 +599,7 @@ class _RuleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -491,9 +609,9 @@ class _RuleRow extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontFamily: 'Nunito',
+              style: TextStyle(
+                color: ac.textPrimary,
+                fontFamily: 'Poppins',
                 fontSize: 14,
               ),
             ),
@@ -507,27 +625,30 @@ class _RuleRow extends StatelessWidget {
 class _ResultView extends StatelessWidget {
   final int score;
   final int? rank;
+  final int coinsEarned;
   final String date;
   final VoidCallback onGoHome;
 
   const _ResultView({
     required this.score,
     this.rank,
+    required this.coinsEarned,
     required this.date,
     required this.onGoHome,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ac = context.ac;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ac.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               const Icon(Icons.emoji_events, color: AppColors.gold, size: 72)
                   .animate()
                   .scaleXY(
@@ -537,12 +658,12 @@ class _ResultView extends StatelessWidget {
                     duration: 600.ms,
                   ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Challenge Complete!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontFamily: 'Nunito',
+                  color: ac.textPrimary,
+                  fontFamily: 'Poppins',
                   fontWeight: FontWeight.w800,
                   fontSize: 26,
                 ),
@@ -551,16 +672,24 @@ class _ResultView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  color: ac.surface,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                      color: AppColors.gold.withValues(alpha: 0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Your Score',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontFamily: 'Nunito',
+                        color: ac.textSecondary,
+                        fontFamily: 'Poppins',
                         fontSize: 13,
                       ),
                     ),
@@ -568,30 +697,30 @@ class _ResultView extends StatelessWidget {
                       '$score',
                       style: const TextStyle(
                         color: AppColors.gold,
-                        fontFamily: 'Nunito',
+                        fontFamily: 'Poppins',
                         fontWeight: FontWeight.w800,
                         fontSize: 56,
                       ),
                     ),
                     if (rank != null) ...[
-                      const Divider(color: AppColors.surfaceVariant),
+                      Divider(color: ac.surfaceVariant),
                       Text(
                         'Your Rank: #$rank',
                         style: const TextStyle(
                           color: AppColors.primary,
-                          fontFamily: 'Nunito',
+                          fontFamily: 'Poppins',
                           fontWeight: FontWeight.w700,
                           fontSize: 20,
                         ),
                       ),
                     ],
                     const SizedBox(height: 8),
-                    const CoinDisplay(coins: 75, fontSize: 20),
-                    const Text(
+                    CoinDisplay(coins: coinsEarned, fontSize: 20),
+                    Text(
                       'earned!',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontFamily: 'Nunito',
+                        color: ac.textSecondary,
+                        fontFamily: 'Poppins',
                         fontSize: 13,
                       ),
                     ),
@@ -602,21 +731,41 @@ class _ResultView extends StatelessWidget {
                   .fadeIn(delay: 300.ms)
                   .slideY(begin: 0.2, end: 0),
               const Spacer(),
-              ElevatedButton(
-                onPressed: onGoHome,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              GestureDetector(
+                onTap: onGoHome,
+                child: Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primaryDark, AppColors.primary,
+                          AppColors.primaryLight],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.45),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                ),
-                child: const Text(
-                  'Back to Home',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 17,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.home_rounded, color: Colors.white, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Back to Home',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ).animate(delay: 600.ms).fadeIn(),

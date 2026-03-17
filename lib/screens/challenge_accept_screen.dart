@@ -111,7 +111,7 @@ class _ChallengeAcceptScreenState
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -122,7 +122,7 @@ class _ChallengeAcceptScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontSize: 14,
                   ),
                 ),
@@ -132,7 +132,7 @@ class _ChallengeAcceptScreenState
                   child: const Text(
                     'Go to Home',
                     style: TextStyle(
-                      fontFamily: 'Nunito',
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -180,7 +180,7 @@ class _ChallengeAcceptScreenState
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontFamily: 'Nunito',
+                  fontFamily: 'Poppins',
                   fontWeight: FontWeight.w800,
                   fontSize: 26,
                 ),
@@ -201,7 +201,7 @@ class _ChallengeAcceptScreenState
                     categoryName,
                     style: TextStyle(
                       color: categoryColor,
-                      fontFamily: 'Nunito',
+                      fontFamily: 'Poppins',
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                     ),
@@ -214,7 +214,7 @@ class _ChallengeAcceptScreenState
                   '10 questions · 10 seconds each',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                     fontSize: 14,
                   ),
                 ),
@@ -241,7 +241,7 @@ class _ChallengeAcceptScreenState
                     : const Text(
                         '⚔️  Accept Challenge',
                         style: TextStyle(
-                          fontFamily: 'Nunito',
+                          fontFamily: 'Poppins',
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
                         ),
@@ -257,7 +257,7 @@ class _ChallengeAcceptScreenState
                   'Decline',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontFamily: 'Nunito',
+                    fontFamily: 'Poppins',
                   ),
                 ),
               ),
