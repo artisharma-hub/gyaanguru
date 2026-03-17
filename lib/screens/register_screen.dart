@@ -354,7 +354,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       ),
                                     )
                                   : const Text(
-                                      '🎮  Start Playing',
+                                      'Start Playing',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Nunito',

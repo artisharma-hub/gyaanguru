@@ -300,7 +300,7 @@ class _HomeHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hi, ${user.name.split(' ').first}! 👋',
+                  'Hi, ${user.name.split(' ').first}!',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontFamily: 'Nunito',
@@ -310,7 +310,7 @@ class _HomeHeader extends StatelessWidget {
                 ),
                 if (user.winStreak > 0)
                   Text(
-                    '${user.winStreak} Win Streak 🔥',
+                    '${user.winStreak} Win Streak',
                     style: const TextStyle(
                       color: AppColors.gold,
                       fontFamily: 'Nunito',

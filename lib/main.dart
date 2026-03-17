@@ -60,7 +60,20 @@ class _GyaanGuruAppState extends ConsumerState<GyaanGuruApp> {
     return MaterialApp.router(
       title: 'Gyaan Guru',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      // Clamp system text scaling so layout never breaks on accessibility sizes
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.15,
+            ),
+          ),
+          child: child!,
+        );
+      },
       routerConfig: router,
     );
   }

@@ -75,9 +75,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
             : AppColors.surfaceVariant;
 
     final String headline = _isWinner
-        ? 'Gyaan Guru! 🏆'
+        ? 'Gyaan Guru!'
         : _isTie
-            ? "It's a Tie! 🤝"
+            ? "It's a Tie!"
             : 'Better Luck Next Time';
 
     final String subtext = _isWinner
@@ -178,9 +178,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                         ],
                       ),
                       child: Center(
-                        child: Text(
-                          _isWinner ? '🏆' : _isTie ? '🤝' : '😤',
-                          style: const TextStyle(fontSize: 40),
+                        child: Icon(
+                          _isWinner
+                              ? Icons.emoji_events_rounded
+                              : _isTie
+                                  ? Icons.handshake_rounded
+                                  : Icons.trending_up_rounded,
+                          color: Colors.white,
+                          size: 42,
                         ),
                       ),
                     )
