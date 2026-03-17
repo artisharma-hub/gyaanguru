@@ -144,7 +144,7 @@ class _AnswerButtonState extends State<AnswerButton> {
                     widget.option,
                     style: TextStyle(
                       color: badgeText,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Nunito',
                       fontWeight: FontWeight.w800,
                       fontSize: 13,
                     ),
@@ -157,7 +157,7 @@ class _AnswerButtonState extends State<AnswerButton> {
                   widget.label,
                   style: TextStyle(
                     color: textColor,
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w600,
                     fontSize: 13.5,
                     height: 1.35,

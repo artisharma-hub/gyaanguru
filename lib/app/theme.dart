@@ -3,59 +3,57 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Static brand colors — identical in light and dark modes
+// Static brand colors — Soft Dark Neon theme
 // ═══════════════════════════════════════════════════════════════════════════
 class AppColors {
   AppColors._();
 
-  // Primary — Saffron Orange
-  static const primary      = Color(0xFFF04E23);
-  static const primaryLight = Color(0xFFFF6B43);
-  static const primaryDark  = Color(0xFFD03D14);
+  // Primary — Electric Violet
+  static const primary      = Color(0xFF6C63FF);
+  static const primaryLight = Color(0xFF8B84FF);
+  static const primaryDark  = Color(0xFF4A42CC);
 
-  // Accent — Electric Violet
-  static const accent      = Color(0xFF7C5CFF);
-  static const accentLight = Color(0xFF9E83FF);
-  static const accentDark  = Color(0xFF5A3CE0);
+  // Accent — Neon Cyan
+  static const accent      = Color(0xFF00D4FF);
+  static const accentLight = Color(0xFF4DE0FF);
+  static const accentDark  = Color(0xFF00A8CC);
 
   // Gold — Warm Amber
-  static const gold      = Color(0xFFFFB020);
+  static const gold      = Color(0xFFF5A623);
   static const goldLight = Color(0xFFFFCC60);
-  static const goldDark  = Color(0xFFD9920A);
+  static const goldDark  = Color(0xFFD98C00);
 
   // Feedback
-  static const correctGreen = Color(0xFF00C48C);
-  static const correctLight = Color(0xFF33D4A4);
-  static const wrongRed     = Color(0xFFFF3B5C);
-  static const wrongLight   = Color(0xFFFF6B85);
+  static const correctGreen = Color(0xFF2ECC71);
+  static const correctLight = Color(0xFF55D98D);
+  static const wrongRed     = Color(0xFFE74C3C);
+  static const wrongLight   = Color(0xFFFF6B5E);
 
   // Timer
-  static const timerSafe   = Color(0xFF0EA5E9);
-  static const timerDanger = Color(0xFFFF3B5C);
+  static const timerSafe   = Color(0xFF2ECC71);
+  static const timerDanger = Color(0xFFE74C3C);
 
-  // Highlight
+  // Highlight / Hot Pink
   static const highlight = Color(0xFFFF4DA8);
 
-  // ── Light-mode static fallbacks ─────────────────────────────────────────
-  // Used in `const` TextStyle/Widget contexts that can't take context.ac.
-  // For adaptive (dark-mode-aware) colors, use context.ac.xxx instead.
-  static const background     = Color(0xFFF8F9FF);
-  static const surface        = Color(0xFFFFFFFF);
-  static const surfaceVariant = Color(0xFFF0F1FF);
-  static const surfaceBright  = Color(0xFFE5E7FF);
-  static const textPrimary    = Color(0xFF0E0E24);
-  static const textSecondary  = Color(0xFF55577A);
-  static const textMuted      = Color(0xFF9698B8);
-  static const border         = Color(0xFFE4E5FF);
-  static const border2        = Color(0xFFCACAFF);
+  // ── Soft Dark Neon static values (used in const contexts) ─────────────
+  static const background     = Color(0xFF15172E);
+  static const surface        = Color(0xFF1C1F3A);
+  static const surfaceVariant = Color(0xFF20244A);
+  static const surfaceBright  = Color(0xFF282C58);
+  static const textPrimary    = Color(0xFFFFFFFF);
+  static const textSecondary  = Color(0xFFA0A3C0);
+  static const textMuted      = Color(0xFF6A6D8E);
+  static const border         = Color(0xFF252848);
+  static const border2        = Color(0xFF2F3360);
 
-  // Category brand colors (same in both modes)
-  static const cricket   = Color(0xFF0078D4);
-  static const bollywood = Color(0xFFC51B7D);
-  static const gk        = Color(0xFFD97706);
-  static const math      = Color(0xFF7C3AED);
-  static const science   = Color(0xFF0891B2);
-  static const hindi     = Color(0xFF059669);
+  // Category brand colors
+  static const cricket   = Color(0xFF00B4FF);
+  static const bollywood = Color(0xFFFF4DA8);
+  static const gk        = Color(0xFFF5A623);
+  static const math      = Color(0xFF6C63FF);
+  static const science   = Color(0xFF2ECC71);
+  static const hindi     = Color(0xFF00D4FF);
 
   // ── Gradient helpers ────────────────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
@@ -76,14 +74,27 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient fireGradient = LinearGradient(
-    colors: [primaryDark, primary, Color(0xFFFF8C40)],
+  static const LinearGradient neonGradient = LinearGradient(
+    colors: [primary, accent],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  static const LinearGradient fireGradient = LinearGradient(
+    colors: [primaryDark, primary, accentLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Soft background gradient for screens
+  static const LinearGradient bgGradient = LinearGradient(
+    colors: [Color(0xFF15172E), Color(0xFF1A1D38)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
   static LinearGradient categoryGradient(Color c) => LinearGradient(
-        colors: [c, c.withValues(alpha: 0.72)],
+        colors: [c.withValues(alpha: 0.85), c.withValues(alpha: 0.50)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
@@ -92,7 +103,7 @@ class AppColors {
     final hsl = HSLColor.fromColor(c);
     return LinearGradient(
       colors: [
-        hsl.withLightness((hsl.lightness - 0.14).clamp(0.0, 1.0)).toColor(),
+        hsl.withLightness((hsl.lightness - 0.10).clamp(0.0, 1.0)).toColor(),
         c,
         hsl.withLightness((hsl.lightness + 0.08).clamp(0.0, 1.0)).toColor(),
       ],
@@ -100,10 +111,25 @@ class AppColors {
       end: Alignment.bottomRight,
     );
   }
+
+  // ── Soft neon glow shadows ───────────────────────────────────────────────
+  static List<BoxShadow> softGlow(Color color, {double blur = 16, double spread = 0}) => [
+        BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: blur, spreadRadius: spread),
+        BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: blur * 2.0, spreadRadius: spread),
+      ];
+
+  static List<BoxShadow> primaryGlow({double blur = 18}) => softGlow(primary, blur: blur);
+  static List<BoxShadow> correctGlow({double blur = 18}) => softGlow(correctGreen, blur: blur);
+  static List<BoxShadow> wrongGlow({double blur = 18})   => softGlow(wrongRed, blur: blur);
+  static List<BoxShadow> goldGlowShadow({double blur = 18}) => softGlow(gold, blur: blur);
+
+  // Legacy alias
+  static List<BoxShadow> neonGlow(Color color, {double blur = 16, double spread = 0}) =>
+      softGlow(color, blur: blur, spread: spread);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Adaptive theme colors — switch between light and dark
+// Adaptive theme colors
 // ═══════════════════════════════════════════════════════════════════════════
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color background;
@@ -128,11 +154,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.border2,
   });
 
+  // Light mode (kept for completeness)
   static const light = AppThemeColors(
-    background:     Color(0xFFF8F9FF),
+    background:     Color(0xFFF4F5FF),
     surface:        Color(0xFFFFFFFF),
-    surfaceVariant: Color(0xFFF0F1FF),
-    surfaceBright:  Color(0xFFE5E7FF),
+    surfaceVariant: Color(0xFFEEEFFF),
+    surfaceBright:  Color(0xFFE3E4FF),
     textPrimary:    Color(0xFF0E0E24),
     textSecondary:  Color(0xFF55577A),
     textMuted:      Color(0xFF9698B8),
@@ -140,16 +167,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     border2:        Color(0xFFCACAFF),
   );
 
+  // Soft Dark Neon — primary theme
   static const dark = AppThemeColors(
-    background:     Color(0xFF0C0C1D),
-    surface:        Color(0xFF131328),
-    surfaceVariant: Color(0xFF1B1B38),
-    surfaceBright:  Color(0xFF232348),
-    textPrimary:    Color(0xFFEAEAFF),
-    textSecondary:  Color(0xFF8889BB),
-    textMuted:      Color(0xFF5A5B7E),
-    border:         Color(0xFF1E1E40),
-    border2:        Color(0xFF28284E),
+    background:     Color(0xFF15172E),
+    surface:        Color(0xFF1C1F3A),
+    surfaceVariant: Color(0xFF20244A),
+    surfaceBright:  Color(0xFF282C58),
+    textPrimary:    Color(0xFFFFFFFF),
+    textSecondary:  Color(0xFFA0A3C0),
+    textMuted:      Color(0xFF6A6D8E),
+    border:         Color(0xFF252848),
+    border2:        Color(0xFF2F3360),
   );
 
   @override
@@ -239,19 +267,18 @@ class AppSizes {
 // ═══════════════════════════════════════════════════════════════════════════
 BoxDecoration glassCard(BuildContext context, {double radius = 20, Color? borderColor}) {
   final ac = context.ac;
-  final isDark = context.isDark;
   return BoxDecoration(
     color: ac.surface,
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(color: borderColor ?? ac.border, width: 1.0),
     boxShadow: [
       BoxShadow(
-        color: AppColors.primary.withValues(alpha: isDark ? 0.06 : 0.05),
+        color: AppColors.primary.withValues(alpha: 0.07),
         blurRadius: 20,
         offset: const Offset(0, 6),
       ),
       BoxShadow(
-        color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.04),
+        color: Colors.black.withValues(alpha: 0.25),
         blurRadius: 8,
         offset: const Offset(0, 2),
       ),
@@ -259,12 +286,21 @@ BoxDecoration glassCard(BuildContext context, {double radius = 20, Color? border
   );
 }
 
+/// Soft neon-bordered card — subtle glow, no harsh contrast
+BoxDecoration neonCard({required Color color, double radius = 20, Color? bg}) => BoxDecoration(
+      color: bg ?? AppColors.surface,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: color.withValues(alpha: 0.40), width: 1.5),
+      boxShadow: AppColors.softGlow(color, blur: 14),
+    );
+
+/// Gradient category card with soft glow
 BoxDecoration glowCard({required Color color, double radius = 20}) => BoxDecoration(
       gradient: AppColors.categoryGradientRich(color),
       borderRadius: BorderRadius.circular(radius),
       boxShadow: [
-        BoxShadow(color: color.withValues(alpha: 0.40), blurRadius: 20, spreadRadius: 2, offset: const Offset(0, 6)),
-        BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 12)),
+        BoxShadow(color: color.withValues(alpha: 0.40), blurRadius: 20, spreadRadius: 1, offset: const Offset(0, 6)),
+        BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 10)),
       ],
     );
 
@@ -280,17 +316,15 @@ class AppTheme {
         scheme: const ColorScheme.light(
           primary:                 AppColors.primary,
           onPrimary:               Colors.white,
-          primaryContainer:        Color(0xFFFFDDD5),
+          primaryContainer:        Color(0xFFE8E6FF),
           onPrimaryContainer:      AppColors.primaryDark,
           secondary:               AppColors.accent,
           onSecondary:             Colors.white,
-          secondaryContainer:      Color(0xFFEAE5FF),
-          onSecondaryContainer:    AppColors.accentDark,
           tertiary:                AppColors.gold,
           onTertiary:              Colors.white,
           surface:                 Color(0xFFFFFFFF),
           onSurface:               Color(0xFF0E0E24),
-          surfaceContainerHighest: Color(0xFFF0F1FF),
+          surfaceContainerHighest: Color(0xFFEEEFFF),
           outline:                 Color(0xFFE4E5FF),
           outlineVariant:          Color(0xFFCACAFF),
           error:                   AppColors.wrongRed,
@@ -302,21 +336,21 @@ class AppTheme {
         brightness: Brightness.dark,
         colors: AppThemeColors.dark,
         scheme: const ColorScheme.dark(
-          primary:                 AppColors.primaryLight,
+          primary:                 AppColors.primary,
           onPrimary:               Colors.white,
-          primaryContainer:        Color(0xFF5A1A08),
+          primaryContainer:        Color(0xFF20204A),
           onPrimaryContainer:      AppColors.primaryLight,
-          secondary:               AppColors.accentLight,
-          onSecondary:             Colors.white,
-          secondaryContainer:      Color(0xFF2A1A60),
+          secondary:               AppColors.accent,
+          onSecondary:             Color(0xFF15172E),
+          secondaryContainer:      Color(0xFF00334A),
           onSecondaryContainer:    AppColors.accentLight,
-          tertiary:                AppColors.goldLight,
-          onTertiary:              Color(0xFF3A2600),
-          surface:                 Color(0xFF131328),
-          onSurface:               Color(0xFFEAEAFF),
-          surfaceContainerHighest: Color(0xFF1B1B38),
-          outline:                 Color(0xFF1E1E40),
-          outlineVariant:          Color(0xFF28284E),
+          tertiary:                AppColors.gold,
+          onTertiary:              Color(0xFF1A0E00),
+          surface:                 Color(0xFF1C1F3A),
+          onSurface:               Color(0xFFFFFFFF),
+          surfaceContainerHighest: Color(0xFF20244A),
+          outline:                 Color(0xFF252848),
+          outlineVariant:          Color(0xFF2F3360),
           error:                   AppColors.wrongRed,
           onError:                 Colors.white,
         ),
@@ -336,11 +370,11 @@ class AppTheme {
       scaffoldBackgroundColor: colors.background,
       extensions: [colors],
 
-      textTheme: GoogleFonts.poppinsTextTheme(TextTheme(
-        displayLarge:   TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w800, fontSize: 36, letterSpacing: -1.0, height: 1.1),
-        displayMedium:  TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w800, fontSize: 30, letterSpacing: -0.8, height: 1.15),
-        headlineLarge:  TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 26, letterSpacing: -0.5),
-        headlineMedium: TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 22, letterSpacing: -0.3),
+      textTheme: GoogleFonts.nunitoTextTheme(TextTheme(
+        displayLarge:   TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w800, fontSize: 36, letterSpacing: -0.5, height: 1.1),
+        displayMedium:  TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w800, fontSize: 30, letterSpacing: -0.3, height: 1.15),
+        headlineLarge:  TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 26),
+        headlineMedium: TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 22),
         headlineSmall:  TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 18),
         titleLarge:     TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w600, fontSize: 16),
         titleMedium:    TextStyle(color: colors.textPrimary,   fontWeight: FontWeight.w600, fontSize: 14, letterSpacing: 0.1),
@@ -363,7 +397,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
           elevation: 0,
           shadowColor: Colors.transparent,
-          textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: 0.2),
+          textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
         ),
       ),
 
@@ -373,14 +407,14 @@ class AppTheme {
           side: const BorderSide(color: AppColors.primary, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
-          textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15),
+          textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+          textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 14),
         ),
       ),
 
@@ -419,9 +453,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.rLg),
           borderSide: const BorderSide(color: AppColors.wrongRed, width: 2),
         ),
-        labelStyle: GoogleFonts.poppins(color: colors.textSecondary, fontWeight: FontWeight.w500, fontSize: 14),
-        hintStyle:  GoogleFonts.poppins(color: colors.textMuted,      fontWeight: FontWeight.w400, fontSize: 14),
-        errorStyle: GoogleFonts.poppins(color: AppColors.wrongRed,    fontWeight: FontWeight.w500, fontSize: 12),
+        labelStyle: GoogleFonts.nunito(color: colors.textSecondary, fontWeight: FontWeight.w600, fontSize: 14),
+        hintStyle:  GoogleFonts.nunito(color: colors.textMuted,      fontWeight: FontWeight.w500, fontSize: 14),
+        errorStyle: GoogleFonts.nunito(color: AppColors.wrongRed,    fontWeight: FontWeight.w600, fontSize: 12),
         prefixIconColor: AppColors.primaryLight,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       ),
@@ -434,11 +468,11 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: colors.textPrimary),
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: GoogleFonts.nunito(
           color: colors.textPrimary,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           fontSize: 18,
-          letterSpacing: -0.2,
+          letterSpacing: 0.2,
         ),
         systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
@@ -456,13 +490,13 @@ class AppTheme {
         unselectedLabelColor: colors.textSecondary,
         indicatorColor: AppColors.primary,
         dividerColor: Colors.transparent,
-        labelStyle:           GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 13),
-        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13),
+        labelStyle:           GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 13),
+        unselectedLabelStyle: GoogleFonts.nunito(fontWeight: FontWeight.w600, fontSize: 13),
       ),
 
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: isDark ? colors.surfaceBright : const Color(0xFF1A1A2E),
-        contentTextStyle: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+        backgroundColor: isDark ? colors.surfaceBright : const Color(0xFF1A1D38),
+        contentTextStyle: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
         behavior: SnackBarBehavior.floating,
         elevation: 8,
@@ -475,8 +509,8 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rXxl + 4)),
         elevation: 8,
-        titleTextStyle:   GoogleFonts.poppins(color: colors.textPrimary,   fontWeight: FontWeight.w700, fontSize: 18),
-        contentTextStyle: GoogleFonts.poppins(color: colors.textSecondary, fontWeight: FontWeight.w400, fontSize: 14),
+        titleTextStyle:   GoogleFonts.nunito(color: colors.textPrimary,   fontWeight: FontWeight.w800, fontSize: 18),
+        contentTextStyle: GoogleFonts.nunito(color: colors.textSecondary, fontWeight: FontWeight.w500, fontSize: 14),
       ),
 
       switchTheme: SwitchThemeData(
@@ -485,7 +519,7 @@ class AppTheme {
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected)
-              ? AppColors.primary.withValues(alpha: 0.35)
+              ? AppColors.primary.withValues(alpha: 0.38)
               : colors.surfaceVariant,
         ),
       ),
@@ -503,10 +537,10 @@ class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: colors.surfaceVariant,
-        selectedColor: AppColors.primary.withValues(alpha: 0.15),
+        selectedColor: AppColors.primary.withValues(alpha: 0.18),
         side: BorderSide(color: colors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rPill)),
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12),
+        labelStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 12),
       ),
     );
   }

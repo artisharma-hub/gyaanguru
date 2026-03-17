@@ -23,7 +23,7 @@ class CoinDisplay extends StatelessWidget {
           _formatCoins(coins),
           style: TextStyle(
             color: AppColors.gold,
-            fontFamily: 'Poppins',
+            fontFamily: 'Nunito',
             fontWeight: FontWeight.w800,
             fontSize: fontSize,
           ),

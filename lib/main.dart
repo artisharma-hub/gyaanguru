@@ -64,7 +64,7 @@ class _GyaanGuruAppState extends ConsumerState<GyaanGuruApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       // Clamp system text scaling so layout never breaks on accessibility sizes
       builder: (context, child) {
         final mq = MediaQuery.of(context);

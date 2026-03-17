@@ -13,6 +13,23 @@ const _avatarColors = [
   '#FF4500', '#0091FF', '#FF0080', '#B44DFF', '#00BCD4', '#69F0AE',
 ];
 
+// ─── helpers ──────────────────────────────────────────────────────────────────
+Color _parseColor(String hex) {
+  try {
+    return Color(int.parse(hex.replaceAll('#', '0xFF')));
+  } catch (_) {
+    return AppColors.primary;
+  }
+}
+
+String _maskPhone(String phone) {
+  if (phone.length <= 4) return phone;
+  return '×××× ×××× ${phone.substring(phone.length - 4)}';
+}
+
+String _fmtWinRate(double rate) => '${(rate * 100).toStringAsFixed(1)}%';
+
+// ══════════════════════════════════════════════════════════════════════════════
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -24,8 +41,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _soundEnabled = true;
   int _navIndex = 3;
 
-  bool _editing = false;
-  late TextEditingController _nameController;
+  // edit state
+  late final TextEditingController _nameCtrl;
   String? _selectedColor;
   String? _pendingImagePath;
   bool _saving = false;
@@ -33,31 +50,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    _nameCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
-  void _startEditing() {
+  // ── edit bottom sheet ────────────────────────────────────────────────────
+  void _openEditSheet() {
     final user = ref.read(authProvider).valueOrNull;
     if (user == null) return;
-    _nameController.text = user.name;
+    _nameCtrl.text = user.name;
     setState(() {
-      _editing = true;
       _selectedColor = user.avatarColor;
       _pendingImagePath = user.avatarImagePath;
     });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _EditBottomSheet(
+        nameCtrl: _nameCtrl,
+        initialColor: user.avatarColor,
+        onColorSelected: (hex) => setState(() => _selectedColor = hex),
+        getSelectedColor: () => _selectedColor ?? user.avatarColor,
+        onPickImage: _pickImage,
+        saving: _saving,
+        onSave: () => _saveProfile(ctx),
+      ),
+    );
   }
 
-  void _cancelEditing() =>
-      setState(() { _editing = false; _pendingImagePath = null; });
+  Future<void> _pickImage(ImageSource source) async {
+    Navigator.pop(context); // close image-source sub-sheet
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 80);
+    if (picked != null) setState(() => _pendingImagePath = picked.path);
+  }
 
-  Future<void> _saveProfile() async {
-    final name = _nameController.text.trim();
+  Future<void> _saveProfile(BuildContext sheetCtx) async {
+    final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Name cannot be empty')),
@@ -71,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             avatarColor: _selectedColor,
             imagePath: _pendingImagePath,
           );
-      if (mounted) setState(() => _editing = false);
+      if (mounted && sheetCtx.mounted) Navigator.pop(sheetCtx);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,119 +119,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    Navigator.pop(context);
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 80);
-    if (picked != null) setState(() => _pendingImagePath = picked.path);
-  }
-
-  void _showImageSourceSheet() {
-    final ac = context.ac;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: ac.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: ac.surfaceVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: Container(
-                  width: 38, height: 38,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.camera_alt_outlined,
-                      color: AppColors.primaryLight, size: 20),
-                ),
-                title: Text('Camera',
-                    style: TextStyle(
-                        color: ac.textPrimary,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600)),
-                onTap: () => _pickImage(ImageSource.camera),
-              ),
-              ListTile(
-                leading: Container(
-                  width: 38, height: 38,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.photo_library_outlined,
-                      color: AppColors.primaryLight, size: 20),
-                ),
-                title: Text('Gallery',
-                    style: TextStyle(
-                        color: ac.textPrimary,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600)),
-                onTap: () => _pickImage(ImageSource.gallery),
-              ),
-              if (_pendingImagePath != null ||
-                  ref.read(authProvider).valueOrNull?.avatarImagePath != null)
-                ListTile(
-                  leading: Container(
-                    width: 38, height: 38,
-                    decoration: BoxDecoration(
-                      color: AppColors.wrongRed.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.delete_outline,
-                        color: AppColors.wrongRed, size: 20),
-                  ),
-                  title: const Text('Remove Photo',
-                      style: TextStyle(
-                          color: AppColors.wrongRed,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    setState(() => _pendingImagePath = '');
-                  },
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  // ── nav ──────────────────────────────────────────────────────────────────
   void _onNavTap(int index) {
     setState(() => _navIndex = index);
     switch (index) {
-      case 0: context.go('/home');        break;
-      case 1: context.go('/daily');       break;
-      case 2: context.go('/leaderboard'); break;
+      case 0:
+        context.go('/home');
+        break;
+      case 1:
+        context.go('/daily');
+        break;
+      case 2:
+        context.go('/leaderboard');
+        break;
     }
   }
 
-  String _maskPhone(String phone) {
-    if (phone.length <= 4) return phone;
-    return '×××× ×××× ${phone.substring(phone.length - 4)}';
-  }
-
-  String _formatWinRate(double rate) => '${(rate * 100).toStringAsFixed(1)}%';
-
-  Color _parseColor(String hex) {
-    try { return Color(int.parse(hex.replaceAll('#', '0xFF'))); }
-    catch (_) { return AppColors.primary; }
-  }
-
+  // ── logout ───────────────────────────────────────────────────────────────
   void _logout() {
     final ac = context.ac;
     showDialog(
@@ -203,20 +143,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: ac.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('Logout?',
-            style: TextStyle(
-                color: ac.textPrimary,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w800)),
-        content: Text('Are you sure you want to logout?',
-            style: TextStyle(
-                color: ac.textSecondary, fontFamily: 'Poppins')),
+        title: Text(
+          'Log out?',
+          style: TextStyle(
+            color: ac.textPrimary,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(
+            color: ac.textSecondary,
+            fontFamily: 'Nunito',
+            fontSize: 14,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: TextStyle(
-                    color: ac.textSecondary, fontFamily: 'Poppins')),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: ac.textSecondary,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -226,442 +180,452 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               context.go('/register');
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.wrongRed),
-            child: const Text('Logout',
-                style: TextStyle(
-                    fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
+              backgroundColor: AppColors.wrongRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Log out',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ── build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).valueOrNull;
-    final ac   = context.ac;
+    final ac = context.ac;
 
     if (user == null) {
       return Scaffold(
-        backgroundColor: ac.background,
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: const AlwaysStoppedAnimation(AppColors.primaryLight),
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.bgGradient),
+          child: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(AppColors.primaryLight),
+            ),
           ),
         ),
       );
     }
 
-    final displayImagePath = _editing ? _pendingImagePath : user.avatarImagePath;
-    final displayColor     = _editing
-        ? (_selectedColor ?? user.avatarColor)
-        : user.avatarColor;
-
     return Scaffold(
-      backgroundColor: ac.background,
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
-      body: Stack(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF15172E), Color(0xFF1A1D38)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // ambient top glow
+            Positioned(
+              top: -80,
+              left: -60,
+              child: Container(
+                width: 320,
+                height: 320,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppColors.primary.withValues(alpha: 0.10),
+                    Colors.transparent,
+                  ]),
+                ),
+              ),
+            ),
+
+            SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── header card ─────────────────────────────────────
+                    _HeaderCard(
+                      user: user,
+                      onEditTap: _openEditSheet,
+                    ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.05),
+
+                    const SizedBox(height: 22),
+
+                    // ── stats grid ──────────────────────────────────────
+                    _StatsGrid(
+                      matches: user.totalMatches,
+                      wins: user.wins,
+                      winRate: _fmtWinRate(user.winRate),
+                      bestStreak: user.bestStreak,
+                    ).animate().fadeIn(delay: 150.ms, duration: 350.ms).slideY(begin: 0.08),
+
+                    const SizedBox(height: 16),
+
+                    // ── settings card ────────────────────────────────────
+                    _SettingsCard(
+                      soundEnabled: _soundEnabled,
+                      onSoundChanged: (v) => setState(() => _soundEnabled = v),
+                      onLeaderboard: () => context.go('/leaderboard'),
+                      onDaily: () => context.go('/daily'),
+                      onLogout: _logout,
+                    ).animate().fadeIn(delay: 250.ms, duration: 350.ms),
+
+                    const SizedBox(height: 24),
+
+                    Center(
+                      child: Text(
+                        'v1.0.0',
+                        style: TextStyle(
+                          color: ac.textMuted,
+                          fontFamily: 'Nunito',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Header Card
+// ══════════════════════════════════════════════════════════════════════════════
+class _HeaderCard extends StatelessWidget {
+  final dynamic user;
+  final VoidCallback onEditTap;
+
+  const _HeaderCard({required this.user, required this.onEditTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final ac = context.ac;
+    final glowColor = _parseColor(user.avatarColor as String);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      decoration: BoxDecoration(
+        color: ac.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.30),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.14),
+            blurRadius: 24,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
         children: [
-          // Top glow
+          // ── edit pencil ──────────────────────────────────────────────
           Positioned(
-            top: -80,
-            left: -60,
-            child: Container(
-              width: 300, height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppColors.primary.withValues(alpha: 0.12),
-                  Colors.transparent,
-                ]),
+            top: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: onEditTap,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.edit_rounded,
+                  color: AppColors.primaryLight,
+                  size: 18,
+                ),
               ),
             ),
           ),
-          SafeArea(
-            bottom: false,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-              child: Column(
+
+          // ── centered content ─────────────────────────────────────────
+          Column(
+            children: [
+              // avatar glow ring
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  // ── Avatar section ───────────────────────────────────────
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 116, height: 116,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(colors: [
-                            _parseColor(displayColor).withValues(alpha: 0.25),
-                            Colors.transparent,
-                          ]),
-                        ),
+                  Container(
+                    width: 116,
+                    height: 116,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [
+                        glowColor.withValues(alpha: 0.20),
+                        Colors.transparent,
+                      ]),
+                    ),
+                  ),
+                  Container(
+                    width: 108,
+                    height: 108,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: glowColor.withValues(alpha: 0.45),
+                        width: 2,
                       ),
-                      GestureDetector(
-                        onTap: _editing ? _showImageSourceSheet : null,
-                        child: AvatarWidget(
-                          name: user.name,
-                          avatarColor: displayColor,
-                          imagePath: displayImagePath,
-                          radius: 48,
+                      boxShadow: [
+                        BoxShadow(
+                          color: glowColor.withValues(alpha: 0.30),
+                          blurRadius: 18,
                         ),
+                      ],
+                    ),
+                  ),
+                  AvatarWidget(
+                    name: user.name as String,
+                    avatarColor: user.avatarColor as String,
+                    imagePath: user.avatarImagePath as String?,
+                    radius: 48,
+                  ),
+                ],
+              ).animate().scaleXY(
+                    begin: 0.75,
+                    end: 1.0,
+                    duration: 500.ms,
+                    curve: Curves.elasticOut,
+                  ),
+
+              const SizedBox(height: 14),
+
+              // name
+              Text(
+                user.name as String,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                  letterSpacing: -0.3,
+                ),
+              ).animate().fadeIn(delay: 80.ms),
+
+              const SizedBox(height: 4),
+
+              // masked phone
+              Text(
+                _maskPhone(user.phone as String),
+                style: TextStyle(
+                  color: ac.textSecondary,
+                  fontFamily: 'Nunito',
+                  fontSize: 13,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // coins
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.28),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: CoinDisplay(coins: user.coins as int, fontSize: 18),
+              ),
+
+              // win streak badge
+              if ((user.winStreak as int) > 0) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [
+                      AppColors.gold.withValues(alpha: 0.18),
+                      AppColors.gold.withValues(alpha: 0.06),
+                    ]),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.gold.withValues(alpha: 0.45),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.22),
+                        blurRadius: 14,
                       ),
-                      if (_editing)
-                        Positioned(
-                          right: 0, bottom: 0,
-                          child: GestureDetector(
-                            onTap: _showImageSourceSheet,
-                            child: Container(
-                              padding: const EdgeInsets.all(7),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [AppColors.primary, AppColors.primaryLight],
-                                ),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: ac.background, width: 2),
-                              ),
-                              child: const Icon(Icons.camera_alt_rounded,
-                                  color: Colors.white, size: 14),
-                            ),
-                          ),
-                        ),
                     ],
-                  )
-                      .animate()
-                      .scaleXY(begin: 0.7, end: 1.0, duration: 500.ms,
-                          curve: Curves.elasticOut),
-
-                  const SizedBox(height: 14),
-
-                  // Name
-                  if (_editing)
-                    SizedBox(
-                      width: 220,
-                      child: TextField(
-                        controller: _nameController,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: ac.textPrimary,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22,
-                        ),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          filled: true,
-                          fillColor: ac.surfaceVariant,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                                color: AppColors.primary, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    Text(
-                      user.name,
-                      style: TextStyle(
-                        color: ac.textPrimary,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w900,
-                        fontSize: 24,
-                        letterSpacing: -0.3,
-                      ),
-                    ).animate().fadeIn(delay: 100.ms),
-
-                  const SizedBox(height: 4),
-                  Text(
-                    _maskPhone(user.phone),
-                    style: TextStyle(
-                      color: ac.textSecondary,
-                      fontFamily: 'Poppins',
+                  ),
+                  child: Text(
+                    '🔥 ${user.winStreak} streak',
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
                   ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-                  const SizedBox(height: 12),
-                  CoinDisplay(coins: user.coins, fontSize: 20),
+// ══════════════════════════════════════════════════════════════════════════════
+// Stats Grid
+// ══════════════════════════════════════════════════════════════════════════════
+class _StatsGrid extends StatelessWidget {
+  final int matches;
+  final int wins;
+  final String winRate;
+  final int bestStreak;
 
-                  if (user.winStreak > 0) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          AppColors.gold.withValues(alpha: 0.15),
-                          AppColors.gold.withValues(alpha: 0.05),
-                        ]),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: AppColors.gold.withValues(alpha: 0.4)),
-                      ),
-                      child: Text(
-                        '🔥 ${user.winStreak} Win Streak',
-                        style: const TextStyle(
-                          color: AppColors.gold,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
+  const _StatsGrid({
+    required this.matches,
+    required this.wins,
+    required this.winRate,
+    required this.bestStreak,
+  });
 
-                  const SizedBox(height: 18),
+  @override
+  Widget build(BuildContext context) {
+    final ac = context.ac;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'YOUR STATS',
+          style: TextStyle(
+            color: ac.textMuted,
+            fontFamily: 'Nunito',
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.55,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _StatCard(
+              icon: Icons.sports_esports_rounded,
+              value: '$matches',
+              label: 'Matches',
+              iconColor: AppColors.accent,
+            ),
+            _StatCard(
+              icon: Icons.emoji_events_rounded,
+              value: '$wins',
+              label: 'Wins',
+              iconColor: AppColors.gold,
+            ),
+            _StatCard(
+              icon: Icons.show_chart_rounded,
+              value: winRate,
+              label: 'Win Rate',
+              iconColor: AppColors.correctGreen,
+            ),
+            _StatCard(
+              icon: Icons.local_fire_department_rounded,
+              value: '$bestStreak',
+              label: 'Best Streak',
+              iconColor: AppColors.highlight,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
-                  // ── Color picker (edit mode) ──────────────────────────────
-                  if (_editing) ...[
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Avatar Color',
-                        style: TextStyle(
-                          color: ac.textSecondary,
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: _avatarColors.map((hex) {
-                        final isSelected =
-                            (_selectedColor ?? user.avatarColor) == hex;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedColor = hex),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.only(right: 10),
-                            width: 38, height: 38,
-                            decoration: BoxDecoration(
-                              color: _parseColor(hex),
-                              shape: BoxShape.circle,
-                              border: isSelected
-                                  ? Border.all(color: Colors.white, width: 2.5)
-                                  : Border.all(color: Colors.transparent),
-                              boxShadow: isSelected
-                                  ? [BoxShadow(
-                                      color: _parseColor(hex).withValues(alpha: 0.6),
-                                      blurRadius: 10,
-                                    )]
-                                  : [],
-                            ),
-                            child: isSelected
-                                ? const Icon(Icons.check_rounded,
-                                    color: Colors.white, size: 18)
-                                : null,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _saving ? null : _cancelEditing,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: ac.textSecondary,
-                              side: BorderSide(color: ac.border),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: const Text('Cancel',
-                                style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _saving ? null : _saveProfile,
-                            child: Container(
-                              height: 46,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [AppColors.primary, AppColors.primaryLight],
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Center(
-                                child: _saving
-                                    ? const SizedBox(
-                                        width: 18, height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation(
-                                              Colors.white),
-                                        ))
-                                    : const Text('Save',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontFamily: 'Poppins',
-                                            fontWeight: FontWeight.w700)),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    OutlinedButton.icon(
-                      onPressed: _startEditing,
-                      icon: const Icon(Icons.edit_rounded, size: 16),
-                      label: const Text('Edit Profile',
-                          style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w700)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primaryLight,
-                        side: const BorderSide(
-                            color: AppColors.primary, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
-                  ],
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color iconColor;
 
-                  const SizedBox(height: 24),
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.iconColor,
+  });
 
-                  // ── Stats card ───────────────────────────────────────────
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: ac.surface,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: ac.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'YOUR STATS',
-                          style: TextStyle(
-                            color: ac.textMuted,
-                            fontFamily: 'Poppins',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _StatCard(
-                              label: 'Matches',
-                              value: '${user.totalMatches}',
-                              icon: Icons.sports_esports_rounded,
-                              color: AppColors.accent,
-                            ),
-                            _StatCard(
-                              label: 'Wins',
-                              value: '${user.wins}',
-                              icon: Icons.emoji_events_rounded,
-                              color: AppColors.gold,
-                            ),
-                            _StatCard(
-                              label: 'Win Rate',
-                              value: _formatWinRate(user.winRate),
-                              icon: Icons.show_chart_rounded,
-                              color: AppColors.correctGreen,
-                            ),
-                            _StatCard(
-                              label: 'Best Streak',
-                              value: '${user.bestStreak}🔥',
-                              icon: Icons.local_fire_department_rounded,
-                              color: AppColors.highlight,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
-
-                  const SizedBox(height: 12),
-
-                  // ── Settings card ────────────────────────────────────────
-                  Container(
-                    decoration: BoxDecoration(
-                      color: ac.surface,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: ac.border),
-                    ),
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          title: Text('Sound Effects',
-                              style: TextStyle(
-                                  color: ac.textPrimary,
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.w600)),
-                          subtitle: Text('Toggle in-game sounds',
-                              style: TextStyle(
-                                  color: ac.textSecondary,
-                                  fontFamily: 'Poppins',
-                                  fontSize: 12)),
-                          secondary: Container(
-                            width: 36, height: 36,
-                            decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.volume_up_rounded,
-                                color: AppColors.accent, size: 20),
-                          ),
-                          value: _soundEnabled,
-                          onChanged: (v) => setState(() => _soundEnabled = v),
-                        ),
-                        Divider(color: ac.border, height: 1),
-                        _SettingsTile(
-                          icon: Icons.leaderboard_rounded,
-                          iconColor: AppColors.primaryLight,
-                          title: 'View Leaderboard',
-                          onTap: () => context.go('/leaderboard'),
-                        ),
-                        Divider(color: ac.border, height: 1),
-                        _SettingsTile(
-                          icon: Icons.today_rounded,
-                          iconColor: AppColors.correctGreen,
-                          title: 'Daily Challenge',
-                          onTap: () => context.go('/daily'),
-                        ),
-                        Divider(color: ac.border, height: 1),
-                        _SettingsTile(
-                          icon: Icons.logout_rounded,
-                          iconColor: AppColors.wrongRed,
-                          title: 'Logout',
-                          onTap: _logout,
-                          destructive: true,
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 300.ms),
-
-                  const SizedBox(height: 20),
-                  Text(
-                    'Gyaan Guru v1.0.0',
-                    style: TextStyle(
-                        color: ac.textMuted,
-                        fontFamily: 'Poppins',
-                        fontSize: 12),
-                  ),
-                ],
-              ),
+  @override
+  Widget build(BuildContext context) {
+    final ac = context.ac;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: ac.surfaceVariant,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ac.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // icon badge — primary-tinted circle
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconColor.withValues(alpha: 0.14),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: ac.textPrimary,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w800,
+              fontSize: 26,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontFamily: 'Nunito',
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -670,49 +634,129 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  const _StatCard(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
+// ══════════════════════════════════════════════════════════════════════════════
+// Settings Card
+// ═════════════════════════════════════���════════════════════════════════════════
+class _SettingsCard extends StatelessWidget {
+  final bool soundEnabled;
+  final ValueChanged<bool> onSoundChanged;
+  final VoidCallback onLeaderboard;
+  final VoidCallback onDaily;
+  final VoidCallback onLogout;
+
+  const _SettingsCard({
+    required this.soundEnabled,
+    required this.onSoundChanged,
+    required this.onLeaderboard,
+    required this.onDaily,
+    required this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
     final ac = context.ac;
-    return Column(
-      children: [
-        Container(
-          width: 44, height: 44,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
+    return Container(
+      decoration: BoxDecoration(
+        color: ac.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: ac.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+            child: Text(
+              'Settings',
+              style: TextStyle(
+                color: ac.textSecondary,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                letterSpacing: 0.4,
+              ),
+            ),
           ),
-          child: Icon(icon, color: color, size: 22),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            color: ac.textPrimary,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w900,
-            fontSize: 17,
+
+          // sound row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                const _IconBadge(
+                  icon: Icons.volume_up_rounded,
+                  color: AppColors.accent,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Sound Effects',
+                    style: TextStyle(
+                      color: ac.textPrimary,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: soundEnabled,
+                  onChanged: onSoundChanged,
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: ac.textSecondary,
-            fontFamily: 'Poppins',
-            fontSize: 11,
+
+          Divider(color: ac.border, height: 1),
+
+          _SettingsTile(
+            icon: Icons.leaderboard_rounded,
+            iconColor: AppColors.primaryLight,
+            title: 'View Leaderboard',
+            onTap: onLeaderboard,
           ),
-        ),
-      ],
+
+          Divider(color: ac.border, height: 1),
+
+          _SettingsTile(
+            icon: Icons.today_rounded,
+            iconColor: AppColors.correctGreen,
+            title: 'Daily Challenge',
+            onTap: onDaily,
+          ),
+
+          Divider(color: ac.border, height: 1),
+
+          _SettingsTile(
+            icon: Icons.logout_rounded,
+            iconColor: AppColors.wrongRed,
+            title: 'Logout',
+            titleColor: AppColors.wrongRed,
+            onTap: onLogout,
+            showChevron: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IconBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const _IconBadge({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, color: color, size: 18),
     );
   }
 }
@@ -721,14 +765,17 @@ class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
+  final Color? titleColor;
   final VoidCallback onTap;
-  final bool destructive;
+  final bool showChevron;
+
   const _SettingsTile({
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.onTap,
-    this.destructive = false,
+    this.titleColor,
+    this.showChevron = true,
   });
 
   @override
@@ -736,28 +783,290 @@ class _SettingsTile extends StatelessWidget {
     final ac = context.ac;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      leading: Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: iconColor, size: 18),
-      ),
+      leading: _IconBadge(icon: icon, color: iconColor),
       title: Text(
         title,
         style: TextStyle(
-          color: destructive ? AppColors.wrongRed : ac.textPrimary,
-          fontFamily: 'Poppins',
+          color: titleColor ?? ac.textPrimary,
+          fontFamily: 'Nunito',
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
       ),
-      trailing: destructive
-          ? null
-          : Icon(Icons.arrow_forward_ios_rounded,
-              color: ac.textMuted, size: 14),
+      trailing: showChevron
+          ? Icon(Icons.arrow_forward_ios_rounded,
+              color: ac.textMuted, size: 14)
+          : null,
       onTap: onTap,
     );
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Edit Bottom Sheet
+// ══════════════════════════════════════════════════════════════════════════════
+class _EditBottomSheet extends StatefulWidget {
+  final TextEditingController nameCtrl;
+  final String initialColor;
+  final ValueChanged<String> onColorSelected;
+  final String Function() getSelectedColor;
+  final Future<void> Function(ImageSource) onPickImage;
+  final bool saving;
+  final VoidCallback onSave;
+
+  const _EditBottomSheet({
+    required this.nameCtrl,
+    required this.initialColor,
+    required this.onColorSelected,
+    required this.getSelectedColor,
+    required this.onPickImage,
+    required this.saving,
+    required this.onSave,
+  });
+
+  @override
+  State<_EditBottomSheet> createState() => _EditBottomSheetState();
+}
+
+class _EditBottomSheetState extends State<_EditBottomSheet> {
+  late String _selectedHex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedHex = widget.initialColor;
+  }
+
+  void _selectColor(String hex) {
+    setState(() => _selectedHex = hex);
+    widget.onColorSelected(hex);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ac = context.ac;
+    final viewInsets = MediaQuery.viewInsetsOf(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: ac.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(color: ac.border2, width: 1),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + viewInsets.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // drag handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: ac.border2,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          Text(
+            'Edit Profile',
+            style: TextStyle(
+              color: ac.textPrimary,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // name field
+          TextField(
+            controller: widget.nameCtrl,
+            style: TextStyle(
+              color: ac.textPrimary,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+            decoration: const InputDecoration(
+              labelText: 'Display Name',
+              prefixIcon: Icon(Icons.person_outline_rounded,
+                  color: AppColors.primaryLight, size: 20),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // color swatches label
+          Text(
+            'AVATAR COLOR',
+            style: TextStyle(
+              color: ac.textMuted,
+              fontFamily: 'Nunito',
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // 6 color swatches
+          Row(
+            children: _avatarColors.map((hex) {
+              final isSelected = _selectedHex == hex;
+              final c = _parseColor(hex);
+              return GestureDetector(
+                onTap: () => _selectColor(hex),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.only(right: 10),
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: c,
+                    shape: BoxShape.circle,
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 2.5)
+                        : Border.all(color: Colors.transparent),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: c.withValues(alpha: 0.45),
+                              blurRadius: 14,
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 18)
+                      : null,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
+
+          // camera / gallery buttons
+          Row(
+            children: [
+              _PhotoButton(
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                onTap: () {
+                  Navigator.pop(context); // close sheet; _pickImage re-opens via parent
+                  widget.onPickImage(ImageSource.camera);
+                },
+              ),
+              const SizedBox(width: 10),
+              _PhotoButton(
+                icon: Icons.photo_library_outlined,
+                label: 'Gallery',
+                onTap: () {
+                  Navigator.pop(context);
+                  widget.onPickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // save gradient button
+          GestureDetector(
+            onTap: widget.saving ? null : widget.onSave,
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 18,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: widget.saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PhotoButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _PhotoButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppColors.primaryLight, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.primaryLight,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

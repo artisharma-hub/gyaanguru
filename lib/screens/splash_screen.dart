@@ -13,13 +13,60 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with TickerProviderStateMixin {
   bool _navigated = false;
+
+  // Outer ring pulse controller
+  late final AnimationController _ring1Controller;
+  late final Animation<double> _ring1Scale;
+  late final Animation<double> _ring1Opacity;
+
+  // Inner ring pulse controller (offset phase)
+  late final AnimationController _ring2Controller;
+  late final Animation<double> _ring2Scale;
+  late final Animation<double> _ring2Opacity;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2400), _navigate);
+
+    // Outer ring — slower, larger sweep
+    _ring1Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: false);
+
+    _ring1Scale = Tween<double>(begin: 0.80, end: 1.20).animate(
+      CurvedAnimation(parent: _ring1Controller, curve: Curves.easeInOut),
+    );
+    _ring1Opacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.55), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 0.55, end: 0.0), weight: 70),
+    ]).animate(_ring1Controller);
+
+    // Inner ring — faster, starts half-phase offset
+    _ring2Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: false);
+
+    _ring2Scale = Tween<double>(begin: 0.88, end: 1.12).animate(
+      CurvedAnimation(parent: _ring2Controller, curve: Curves.easeInOut),
+    );
+    _ring2Opacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.45), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 0.45, end: 0.0), weight: 60),
+    ]).animate(_ring2Controller);
+
+    Future.delayed(const Duration(milliseconds: 2500), _navigate);
+  }
+
+  @override
+  void dispose() {
+    _ring1Controller.dispose();
+    _ring2Controller.dispose();
+    super.dispose();
   }
 
   void _navigate() {
@@ -56,182 +103,307 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final ac = context.ac;
 
     return Scaffold(
-      backgroundColor: ac.background,
-      body: Stack(
-        children: [
-          // Background glows
-          Positioned(
-            top: -100,
-            left: -80,
-            child: Container(
-              width: 380,
-              height: 380,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppColors.primary.withValues(alpha: context.isDark ? 0.22 : 0.16),
-                  Colors.transparent,
-                ]),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -120,
-            right: -80,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppColors.accent.withValues(alpha: context.isDark ? 0.18 : 0.10),
-                  Colors.transparent,
-                ]),
-              ),
-            ),
-          ),
-
-          // Center content
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo with pulsing rings
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer ring
-                    Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.18),
-                          width: 1,
-                        ),
-                      ),
-                    )
-                        .animate(onPlay: (c) => c.repeat())
-                        .scaleXY(begin: 0.85, end: 1.15, duration: 2000.ms, curve: Curves.easeInOut)
-                        .fadeIn(duration: 600.ms)
-                        .then()
-                        .fadeOut(duration: 600.ms),
-
-                    // Middle ring
-                    Container(
-                      width: 112,
-                      height: 112,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primaryLight.withValues(alpha: 0.25),
-                          width: 1.5,
-                        ),
-                      ),
-                    )
-                        .animate(onPlay: (c) => c.repeat())
-                        .scaleXY(begin: 0.9, end: 1.1, duration: 1600.ms, curve: Curves.easeInOut)
-                        .fadeIn(duration: 400.ms),
-
-                    // Logo box
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.primaryLight],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(26),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.55),
-                            blurRadius: 32,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'G',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w900,
-                            fontSize: 50,
-                            shadows: [Shadow(color: Colors.white38, blurRadius: 12)],
-                          ),
-                        ),
-                      ),
-                    )
-                        .animate()
-                        .fadeIn(duration: 500.ms)
-                        .scaleXY(begin: 0.6, end: 1.0, duration: 700.ms, curve: Curves.elasticOut),
-                  ],
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.bgGradient),
+        child: Stack(
+          children: [
+            // ── Ambient background glows ──────────────────────────────────
+            Positioned(
+              top: -120,
+              left: -100,
+              child: Container(
+                width: 420,
+                height: 420,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.20),
+                      AppColors.primary.withValues(alpha: 0.06),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
                 ),
+              ),
+            ),
+            Positioned(
+              bottom: -140,
+              right: -90,
+              child: Container(
+                width: 360,
+                height: 360,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accent.withValues(alpha: 0.16),
+                      AppColors.accent.withValues(alpha: 0.04),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Subtle mid-screen glow
+            Positioned(
+              top: MediaQuery.sizeOf(context).height * 0.35,
+              left: MediaQuery.sizeOf(context).width * 0.5 - 160,
+              child: Container(
+                width: 320,
+                height: 320,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primaryDark.withValues(alpha: 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
-                const SizedBox(height: 28),
+            // ── Center content ────────────────────────────────────────────
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo with animated glow rings
+                  SizedBox(
+                    width: 160,
+                    height: 160,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Outer pulsing ring
+                        AnimatedBuilder(
+                          animation: _ring1Controller,
+                          builder: (_, __) => Transform.scale(
+                            scale: _ring1Scale.value,
+                            child: Opacity(
+                              opacity: _ring1Opacity.value,
+                              child: Container(
+                                width: 148,
+                                height: 148,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.primary,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 16,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ).animate().fadeIn(
+                              delay: 600.ms,
+                              duration: 400.ms,
+                            ),
 
-                // Title with gradient
-                ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: [ac.textPrimary, AppColors.primaryLight],
-                  ).createShader(bounds),
-                  child: const Text(
-                    'Gyaan Guru',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w900,
-                      fontSize: 36,
-                      letterSpacing: -0.5,
+                        // Inner pulsing ring
+                        AnimatedBuilder(
+                          animation: _ring2Controller,
+                          builder: (_, __) => Transform.scale(
+                            scale: _ring2Scale.value,
+                            child: Opacity(
+                              opacity: _ring2Opacity.value,
+                              child: Container(
+                                width: 118,
+                                height: 118,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.primaryLight,
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primaryLight
+                                          .withValues(alpha: 0.20),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ).animate().fadeIn(
+                              delay: 800.ms,
+                              duration: 400.ms,
+                            ),
+
+                        // Logo box
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                AppColors.primaryDark,
+                                AppColors.primary,
+                                AppColors.primaryLight,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(26),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.60),
+                                blurRadius: 36,
+                                spreadRadius: 4,
+                              ),
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.25),
+                                blurRadius: 60,
+                                spreadRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'G',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Nunito',
+                                fontWeight: FontWeight.w900,
+                                fontSize: 50,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white54,
+                                    blurRadius: 14,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                            .animate()
+                            .fadeIn(duration: 400.ms)
+                            .scaleXY(
+                              begin: 0.50,
+                              end: 1.0,
+                              duration: 750.ms,
+                              curve: Curves.elasticOut,
+                            ),
+                      ],
                     ),
                   ),
-                )
-                    .animate()
-                    .fadeIn(delay: 400.ms, duration: 500.ms)
-                    .slideY(begin: 0.3, end: 0, duration: 500.ms),
 
-                const SizedBox(height: 8),
+                  const SizedBox(height: 32),
 
-                Text(
-                  'Knowledge is Power',
-                  style: TextStyle(
-                    color: ac.textSecondary,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                    letterSpacing: 0.5,
-                  ),
-                ).animate().fadeIn(delay: 700.ms, duration: 500.ms),
-
-                const SizedBox(height: 64),
-
-                // Loading dots
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(3, (i) {
-                    return Container(
-                      width: 7,
-                      height: 7,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryLight,
-                        shape: BoxShape.circle,
+                  // App title — gradient ShaderMask
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        AppColors.textPrimary,
+                        AppColors.primaryLight,
+                        AppColors.accentLight,
+                      ],
+                      stops: [0.0, 0.55, 1.0],
+                    ).createShader(bounds),
+                    blendMode: BlendMode.srcIn,
+                    child: const Text(
+                      'Gyaan Guru',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 38,
+                        letterSpacing: -0.5,
+                        height: 1.1,
                       ),
-                    )
-                        .animate(delay: (1000 + i * 180).ms, onPlay: (c) => c.repeat())
-                        .scaleXY(begin: 0.5, end: 1.0, duration: 500.ms, curve: Curves.easeInOut)
-                        .then()
-                        .scaleXY(begin: 1.0, end: 0.5, duration: 500.ms);
-                  }),
-                ).animate().fadeIn(delay: 1200.ms),
-              ],
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 350.ms, duration: 500.ms)
+                      .slideY(
+                        begin: 0.30,
+                        end: 0.0,
+                        delay: 350.ms,
+                        duration: 550.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
+
+                  const SizedBox(height: 10),
+
+                  // Tagline
+                  Text(
+                    'Knowledge is Power',
+                    style: TextStyle(
+                      color: ac.textSecondary,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                      letterSpacing: 0.8,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 650.ms, duration: 500.ms)
+                      .slideY(
+                        begin: 0.20,
+                        end: 0.0,
+                        delay: 650.ms,
+                        duration: 450.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
+
+                  const SizedBox(height: 72),
+
+                  // Bouncing loading dots
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (i) {
+                      return Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.55),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      )
+                          .animate(
+                            delay: (1100 + i * 160).ms,
+                            onPlay: (c) => c.repeat(),
+                          )
+                          .moveY(
+                            begin: 0,
+                            end: -10,
+                            duration: 420.ms,
+                            curve: Curves.easeOut,
+                          )
+                          .then()
+                          .moveY(
+                            begin: -10,
+                            end: 0,
+                            duration: 420.ms,
+                            curve: Curves.easeIn,
+                          );
+                    }),
+                  ).animate().fadeIn(delay: 1000.ms, duration: 400.ms),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

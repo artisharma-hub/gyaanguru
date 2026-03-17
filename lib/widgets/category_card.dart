@@ -106,7 +106,7 @@ class CategoryCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isSelected ? Colors.white : ac.textPrimary,
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Nunito',
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                         height: 1.25,

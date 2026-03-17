@@ -69,7 +69,7 @@ class _ShareSheet extends StatelessWidget {
                 'Share Challenge',
                 style: TextStyle(
                   color: ac.textPrimary,
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Nunito',
                   fontWeight: FontWeight.w800,
                   fontSize: 20,
                 ),
@@ -79,7 +79,7 @@ class _ShareSheet extends StatelessWidget {
                 'Invite a friend to battle!',
                 style: TextStyle(
                   color: ac.textSecondary,
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Nunito',
                   fontSize: 13,
                 ),
               ),
@@ -102,7 +102,7 @@ class _ShareSheet extends StatelessWidget {
                         link,
                         style: TextStyle(
                           color: ac.textSecondary,
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Nunito',
                           fontSize: 12,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -209,7 +209,7 @@ class _ShareOption extends StatelessWidget {
             label,
             style: TextStyle(
               color: ac.textSecondary,
-              fontFamily: 'Poppins',
+              fontFamily: 'Nunito',
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),

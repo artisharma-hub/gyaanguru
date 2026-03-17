@@ -159,38 +159,59 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     if (matchState.phase == MatchPhase.error) {
       return Scaffold(
-        backgroundColor: ac.background,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.wrongRed.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF15172E), Color(0xFF1A1D38), Color(0xFF15172E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: AppColors.wrongRed.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.wrongRed.withValues(alpha: 0.35),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.wrongRed.withValues(alpha: 0.30),
+                        blurRadius: 16,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.wifi_off_rounded,
+                      color: AppColors.wrongRed, size: 40),
                 ),
-                child: const Icon(Icons.wifi_off_rounded,
-                    color: AppColors.wrongRed, size: 40),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                matchState.errorMessage ?? 'Connection lost',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: ac.textPrimary,
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 20),
+                Text(
+                  matchState.errorMessage ?? 'Connection lost',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: ac.textPrimary,
+                    fontFamily: 'Nunito',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 28),
-              ElevatedButton(
-                onPressed: () => context.go('/home'),
-                child: const Text('Back to Home'),
-              ),
-            ],
+                const SizedBox(height: 28),
+                ElevatedButton(
+                  onPressed: () => context.go('/home'),
+                  child: const Text(
+                    'Back to Home',
+                    style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -198,262 +219,347 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     final q             = matchState.currentQuestion;
     final timerFraction = (_timeLeft / _questionDuration).clamp(0.0, 1.0);
+    final isDanger      = _timeLeft <= 3;
 
     return Scaffold(
-      backgroundColor: ac.background,
-      body: Stack(
-        children: [
-          // Subtle category-colored background glow top
-          Positioned(
-            top: -40,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 200,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    categoryColor.withValues(alpha: context.isDark ? 0.14 : 0.08),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF15172E), Color(0xFF1A1D38), Color(0xFF15172E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // ── Soft category-colored radial glow top-left ────────────────
+            Positioned(
+              top: -60,
+              left: -40,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    categoryColor.withValues(alpha: 0.14),
                     Colors.transparent,
-                  ],
+                  ]),
                 ),
               ),
             ),
-          ),
 
-          // Category color top accent bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 3,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    categoryColor.withValues(alpha: 0),
-                    categoryColor,
-                    categoryColor.withValues(alpha: 0),
-                  ],
+            // ── Soft secondary glow bottom-right ──────────────────────────
+            Positioned(
+              bottom: -80,
+              right: -60,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppColors.primary.withValues(alpha: 0.10),
+                    Colors.transparent,
+                  ]),
                 ),
               ),
             ),
-          ),
 
-          SafeArea(
-            child: q == null
-                ? Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(categoryColor),
-                      strokeWidth: 3,
+            // ── Top accent bar — 4px category-colored with glow ───────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      categoryColor.withValues(alpha: 0),
+                      categoryColor,
+                      categoryColor.withValues(alpha: 0.8),
+                      categoryColor.withValues(alpha: 0),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: categoryColor.withValues(alpha: 0.55),
+                      blurRadius: 12,
+                      spreadRadius: 1,
                     ),
-                  )
-                : Column(
-                    children: [
-                      // ── Score header ────────────────────────────────────
-                      Container(
-                        margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: ac.surface,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                              color: categoryColor.withValues(alpha: 0.2), width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: categoryColor.withValues(alpha: 0.08),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: VsCard(
-                          myName: user?.name ?? 'You',
-                          myAvatarColor: user?.avatarColor ?? '#FF4500',
-                          myScore: matchState.myScore,
-                          opponentName: matchState.opponentName ?? 'Opponent',
-                          opponentAvatarColor:
-                              matchState.opponentAvatarColor ?? '#EA580C',
-                          opponentScore: matchState.opponentScore,
-                        ),
-                      ),
+                  ],
+                ),
+              ),
+            ),
 
-                      // ── Q indicator row + circular timer ───────────────
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Category + question badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(
+            SafeArea(
+              child: q == null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(categoryColor),
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Loading question...',
+                            style: TextStyle(
+                              color: ac.textSecondary,
+                              fontFamily: 'Nunito',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        // ── VS Score header ──────────────────────────────
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: ac.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: categoryColor.withValues(alpha: 0.20),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
                                 color: categoryColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: categoryColor.withValues(alpha: 0.4),
-                                ),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
                               ),
-                              child: Text(
-                                '${widget.category.toUpperCase()}  ·  Q${matchState.currentQuestionIndex + 1}/10',
-                                style: TextStyle(
-                                  color: categoryColor,
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12,
-                                ),
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.20),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                            const Spacer(),
-                            // Circular arc timer
-                            _CircularTimer(
-                              fraction: timerFraction,
-                              color: _timerColor,
-                              timeLeft: _timeLeft,
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: VsCard(
+                            myName: user?.name ?? 'You',
+                            myAvatarColor: user?.avatarColor ?? '#FF4500',
+                            myScore: matchState.myScore,
+                            opponentName: matchState.opponentName ?? 'Opponent',
+                            opponentAvatarColor:
+                                matchState.opponentAvatarColor ?? '#EA580C',
+                            opponentScore: matchState.opponentScore,
+                          ),
                         ),
-                      ),
 
-                      // ── Thin linear progress bar (secondary indicator) ─
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Container(
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: ac.surfaceVariant,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Stack(
-                                children: [
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 50),
-                                    width: constraints.maxWidth * timerFraction,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          _timerColor.withValues(alpha: 0.7),
-                                          _timerColor,
+                        // ── Q indicator badge + circular arc timer ────────
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Category + question badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(alpha: 0.35),
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(alpha: 0.18),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: categoryColor,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: categoryColor.withValues(alpha: 0.60),
+                                            blurRadius: 6,
+                                          ),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(2),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: _timerColor.withValues(alpha: 0.5),
-                                          blurRadius: 4,
-                                        ),
-                                      ],
                                     ),
+                                    const SizedBox(width: 7),
+                                    Text(
+                                      '${widget.category.toUpperCase()}  ·  Q${matchState.currentQuestionIndex + 1}/10',
+                                      style: const TextStyle(
+                                        color: AppColors.primaryLight,
+                                        fontFamily: 'Nunito',
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                              // Circular arc timer
+                              _CircularTimer(
+                                fraction: timerFraction,
+                                color: _timerColor,
+                                timeLeft: _timeLeft,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // ── Secondary linear progress bar ─────────────────
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: ac.surfaceVariant,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 50),
+                                      width: constraints.maxWidth * timerFraction,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            _timerColor.withValues(alpha: 0.7),
+                                            _timerColor,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _timerColor.withValues(alpha: 0.50),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        // ── Question card ──────────────────────────────────
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: ac.surface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isDanger
+                                      ? AppColors.timerDanger.withValues(alpha: 0.55)
+                                      : AppColors.primary.withValues(alpha: 0.15),
+                                  width: isDanger ? 2 : 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isDanger
+                                            ? AppColors.timerDanger
+                                            : AppColors.primary)
+                                        .withValues(alpha: isDanger ? 0.30 : 0.12),
+                                    blurRadius: isDanger ? 24 : 16,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                            );
-                          },
-                        ),
-                      ),
-
-                      // ── Question card ───────────────────────────────────
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: ac.surface,
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: _timeLeft <= 3
-                                    ? AppColors.timerDanger.withValues(alpha: 0.5)
-                                    : categoryColor.withValues(alpha: 0.22),
-                                width: _timeLeft <= 3 ? 2 : 1.5,
+                              child: Center(
+                                child: Text(
+                                  q.questionText,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: ac.textPrimary,
+                                    fontFamily: 'Nunito',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: AppSizes.sp(context, 22),
+                                    height: 1.4,
+                                  ),
+                                )
+                                    .animate(key: ValueKey(q.id))
+                                    .fadeIn(duration: 300.ms)
+                                    .slideY(begin: 0.08, end: 0),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (_timeLeft <= 3
-                                          ? AppColors.timerDanger
-                                          : categoryColor)
-                                      .withValues(alpha: _timeLeft <= 3 ? 0.18 : 0.08),
-                                  blurRadius: _timeLeft <= 3 ? 24 : 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                q.questionText,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: ac.textPrimary,
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: AppSizes.sp(context, 18),
-                                  height: 1.4,
-                                ),
-                              )
-                                  .animate(key: ValueKey(q.id))
-                                  .fadeIn(duration: 300.ms)
-                                  .slideY(begin: 0.08, end: 0),
                             ),
                           ),
                         ),
-                      ),
 
-                      // ── Answer buttons ──────────────────────────────────
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: GridView.count(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 1.9,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: ['A', 'B', 'C', 'D'].map((opt) {
-                              final label = q.options[opt] ?? '';
-                              AnswerState ansState = AnswerState.none;
-                              final resultKnown = matchState.correctOption != null;
-                              if (resultKnown) {
-                                if (opt == matchState.correctOption) {
-                                  ansState = AnswerState.correct;
+                        // ── Answer buttons 2×2 grid ────────────────────────
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: GridView.count(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.9,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: ['A', 'B', 'C', 'D'].map((opt) {
+                                final label = q.options[opt] ?? '';
+                                AnswerState ansState = AnswerState.none;
+                                final resultKnown = matchState.correctOption != null;
+                                if (resultKnown) {
+                                  if (opt == matchState.correctOption) {
+                                    ansState = AnswerState.correct;
+                                  } else if (opt == matchState.selectedOption) {
+                                    ansState = AnswerState.wrong;
+                                  }
                                 } else if (opt == matchState.selectedOption) {
-                                  ansState = AnswerState.wrong;
+                                  ansState = AnswerState.selected;
                                 }
-                              } else if (opt == matchState.selectedOption) {
-                                ansState = AnswerState.selected;
-                              }
-                              return AnswerButton(
-                                label: label,
-                                option: opt,
-                                onTap: _timerActive &&
-                                        matchState.selectedOption == null
-                                    ? () => _onAnswerTap(opt)
-                                    : null,
-                                state: ansState,
-                              );
-                            }).toList(),
+                                return AnswerButton(
+                                  label: label,
+                                  option: opt,
+                                  onTap: _timerActive &&
+                                          matchState.selectedOption == null
+                                      ? () => _onAnswerTap(opt)
+                                      : null,
+                                  state: ansState,
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// ── Circular Arc Timer ───────────────────────────────────────────────────────
+// ── Circular Arc Timer ──────────────────────────────────────────────────���─────
 class _CircularTimer extends StatelessWidget {
   final double fraction;
   final Color color;
@@ -478,9 +584,15 @@ class _CircularTimer extends StatelessWidget {
             timeLeft <= 0 ? '0' : timeLeft.ceil().toString(),
             style: TextStyle(
               color: color,
-              fontFamily: 'Poppins',
+              fontFamily: 'Nunito',
               fontWeight: FontWeight.w900,
               fontSize: 20,
+              shadows: [
+                Shadow(
+                  color: color.withValues(alpha: 0.50),
+                  blurRadius: 8,
+                ),
+              ],
             ),
           )
               .animate(
@@ -518,6 +630,21 @@ class _ArcTimerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawCircle(center, radius, trackPaint);
 
+    // Glow layer (soft outer glow)
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.18)
+      ..strokeWidth = 9
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi * fraction,
+      false,
+      glowPaint,
+    );
+
     // Progress arc
     final arcPaint = Paint()
       ..color = color
@@ -538,7 +665,7 @@ class _ArcTimerPainter extends CustomPainter {
       old.fraction != fraction || old.color != color;
 }
 
-// ── Countdown screen ─────────────────────────────────────────────────────────
+// ── Countdown screen ──────────────────────────────────────────────────────────
 class _CountdownScreen extends StatelessWidget {
   final int countdown;
   const _CountdownScreen({required this.countdown});
@@ -547,68 +674,110 @@ class _CountdownScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isGo = countdown <= 0;
     final ac   = context.ac;
+    final glowColor = isGo ? AppColors.correctGreen : AppColors.primary;
+
     return Scaffold(
-      backgroundColor: ac.background,
-      body: Stack(
-        children: [
-          // Radial glow
-          Center(
-            child: Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  (isGo ? AppColors.correctGreen : AppColors.primary)
-                      .withValues(alpha: 0.22),
-                  Colors.transparent,
-                ]),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF15172E), Color(0xFF1A1D38), Color(0xFF15172E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Subtle corner glow top-left
+            Positioned(
+              top: -40,
+              left: -40,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppColors.primary.withValues(alpha: 0.10),
+                    Colors.transparent,
+                  ]),
+                ),
               ),
             ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Battle starts in',
-                  style: TextStyle(
-                    color: ac.textSecondary,
-                    fontFamily: 'Poppins',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+            // Subtle corner glow bottom-right
+            Positioned(
+              bottom: -60,
+              right: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppColors.accent.withValues(alpha: 0.07),
+                    Colors.transparent,
+                  ]),
                 ),
-                const SizedBox(height: 12),
-                ShaderMask(
-                  shaderCallback: (b) => LinearGradient(
-                    colors: isGo
-                        ? [AppColors.correctGreen, const Color(0xFF34D399)]
-                        : [AppColors.primary, AppColors.primaryLight],
-                  ).createShader(b),
-                  child: Text(
-                    isGo ? 'GO!' : '$countdown',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w900,
-                      fontSize: 110,
-                      height: 1,
+              ),
+            ),
+            // Central radial glow
+            Center(
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    glowColor.withValues(alpha: 0.20),
+                    Colors.transparent,
+                  ]),
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Battle starts in',
+                    style: TextStyle(
+                      color: ac.textSecondary,
+                      fontFamily: 'Nunito',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                )
-                    .animate(key: ValueKey(countdown))
-                    .scaleXY(
-                      begin: 1.6,
-                      end: 1.0,
-                      duration: 450.ms,
-                      curve: Curves.elasticOut,
-                    )
-                    .fadeIn(duration: 200.ms),
-              ],
+                  const SizedBox(height: 12),
+                  ShaderMask(
+                    shaderCallback: (b) => LinearGradient(
+                      colors: isGo
+                          ? [AppColors.correctGreen, const Color(0xFF34D399)]
+                          : [AppColors.primary, AppColors.primaryLight],
+                    ).createShader(b),
+                    child: Text(
+                      isGo ? 'GO!' : '$countdown',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 110,
+                        height: 1,
+                      ),
+                    ),
+                  )
+                      .animate(key: ValueKey(countdown))
+                      .scaleXY(
+                        begin: 1.6,
+                        end: 1.0,
+                        duration: 450.ms,
+                        curve: Curves.elasticOut,
+                      )
+                      .fadeIn(duration: 200.ms),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

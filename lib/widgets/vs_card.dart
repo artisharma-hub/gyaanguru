@@ -65,7 +65,7 @@ class VsCard extends StatelessWidget {
                   'VS',
                   style: TextStyle(
                     color: Colors.white,
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
                     letterSpacing: 1.5,
@@ -140,7 +140,7 @@ class _PlayerInfo extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: isWinning ? AppColors.primaryLight : ac.textSecondary,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Nunito',
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -160,7 +160,7 @@ class _PlayerInfo extends StatelessWidget {
                         'YOU',
                         style: TextStyle(
                           color: AppColors.primaryLight,
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Nunito',
                           fontWeight: FontWeight.w800,
                           fontSize: 9,
                           letterSpacing: 0.8,
@@ -179,7 +179,7 @@ class _PlayerInfo extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           style: TextStyle(
             color: Colors.white,
-            fontFamily: 'Poppins',
+            fontFamily: 'Nunito',
             fontWeight: FontWeight.w900,
             fontSize: isWinning ? 36 : 32,
           ),
@@ -204,7 +204,7 @@ class _PlayerInfo extends StatelessWidget {
               textAlign: isMe ? TextAlign.left : TextAlign.right,
               style: TextStyle(
                 color: AppColors.correctGreen.withValues(alpha: 0.9),
-                fontFamily: 'Poppins',
+                fontFamily: 'Nunito',
                 fontWeight: FontWeight.w600,
                 fontSize: 10,
               ),
@@ -284,7 +284,7 @@ class AvatarWidget extends StatelessWidget {
           initials,
           style: TextStyle(
             color: Colors.white,
-            fontFamily: 'Poppins',
+            fontFamily: 'Nunito',
             fontWeight: FontWeight.w800,
             fontSize: radius * 0.65,
             shadows: const [Shadow(color: Colors.black26, blurRadius: 4)],

@@ -102,7 +102,7 @@ class _NavItem extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           style: TextStyle(
             color: selected ? AppColors.primary : ac.textMuted,
-            fontFamily: 'Poppins',
+            fontFamily: 'Nunito',
             fontSize: 10,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: selected ? 0.2 : 0,
