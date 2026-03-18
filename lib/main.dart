@@ -17,7 +17,7 @@ Uri? consumePendingDeepLink() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: 'assets/.env');
+  await dotenv.load(fileName: '.env');
   try {
     _pendingDeepLink = await AppLinks().getInitialLink();
   } catch (e) {

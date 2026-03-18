@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-String get _baseUrl => dotenv.env['BASE_URL'] ?? 'http://103.204.52.50:3502';
+// String get _baseUrl => dotenv.env['BASE_URL'] ?? 'http://103.204.52.50:3502';
+String get _baseUrl =>  'http://103.204.52.50:3502';
+
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
