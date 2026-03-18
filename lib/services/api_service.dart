@@ -11,8 +11,8 @@ class ApiService {
   ApiService._internal() {
     _dio = Dio(BaseOptions(
       baseUrl: _baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
     ));
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -31,8 +31,8 @@ class ApiService {
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> register(String name, String phone) async {
-    final res = await _dio.post('/api/auth/register',
-        data: {'name': name, 'phone': phone});
+    final res = await _dio
+        .post('/api/auth/register', data: {'name': name, 'phone': phone});
     return res.data;
   }
 
@@ -84,8 +84,8 @@ class ApiService {
   // ── Challenge ─────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> createChallenge(String category) async {
-    final res = await _dio.post('/api/challenge/create',
-        data: {'category': category});
+    final res =
+        await _dio.post('/api/challenge/create', data: {'category': category});
     return res.data;
   }
 
@@ -102,8 +102,8 @@ class ApiService {
   // ── Match ─────────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> createBotMatch(String category) async {
-    final res = await _dio.post('/api/match/bot',
-        queryParameters: {'category': category});
+    final res = await _dio
+        .post('/api/match/bot', queryParameters: {'category': category});
     return res.data;
   }
 

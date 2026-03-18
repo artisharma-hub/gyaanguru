@@ -132,6 +132,106 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     }
   }
 
+  Future<void> _showQuitDialog() async {
+    _timer?.cancel();
+    final quit = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text(
+          'Quit Challenge?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+          ),
+        ),
+        content: const Text(
+          'Your progress will be lost and you won\'t be able to start from where you left.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontFamily: 'Nunito',
+            fontSize: 14,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Keep Playing',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.wrongRed,
+                  side: const BorderSide(color: AppColors.wrongRed, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Quit Challenge',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+    if (quit == true) {
+      context.go('/home');
+    } else {
+      // Resume timer with remaining time
+      _timer = Timer.periodic(const Duration(milliseconds: 50), (t) {
+        if (!mounted) {
+          t.cancel();
+          return;
+        }
+        setState(() {
+          _timeLeft -= 0.05;
+          if (_timeLeft <= 0) {
+            _timeLeft = 0;
+            t.cancel();
+            _onTimeout();
+          }
+        });
+      });
+    }
+  }
+
   Future<void> _submitAnswers() async {
     setState(() => _submitted = true);
     try {
@@ -145,8 +245,7 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _finalScore =
-            _answers.values.where((v) => v.isNotEmpty).length * 10;
+        _finalScore = _answers.values.where((v) => v.isNotEmpty).length * 10;
         _coinsEarned = 75;
       });
     }
@@ -647,7 +746,8 @@ class _IntroView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.45),
+                                color:
+                                    AppColors.primary.withValues(alpha: 0.45),
                                 blurRadius: 24,
                                 offset: const Offset(0, 8),
                               ),
@@ -750,9 +850,7 @@ class _AlreadyPlayedView extends StatelessWidget {
                             end: 1.0,
                             curve: Curves.elasticOut,
                             duration: 600.ms),
-
                         const SizedBox(height: 24),
-
                         Text(
                           "You've already played today!",
                           textAlign: TextAlign.center,
@@ -763,9 +861,7 @@ class _AlreadyPlayedView extends StatelessWidget {
                             fontSize: 22,
                           ),
                         ).animate().fadeIn(delay: 200.ms),
-
                         const SizedBox(height: 16),
-
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 28, vertical: 14),
@@ -795,8 +891,7 @@ class _AlreadyPlayedView extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               ShaderMask(
-                                shaderCallback: (b) =>
-                                    const LinearGradient(
+                                shaderCallback: (b) => const LinearGradient(
                                   colors: [
                                     AppColors.goldDark,
                                     AppColors.gold,
@@ -816,9 +911,7 @@ class _AlreadyPlayedView extends StatelessWidget {
                             ],
                           ),
                         ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
-
                         const SizedBox(height: 16),
-
                         Text(
                           'Come back tomorrow for a new challenge!',
                           textAlign: TextAlign.center,
@@ -828,15 +921,12 @@ class _AlreadyPlayedView extends StatelessWidget {
                             fontSize: 14,
                           ),
                         ).animate().fadeIn(delay: 500.ms),
-
                         const SizedBox(height: 32),
-
                         SoundTap(
                           onTap: onGoHome,
                           child: Container(
                             height: 54,
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
@@ -935,6 +1025,7 @@ class _ResultView extends StatelessWidget {
   final int? rank;
   final int coinsEarned;
   final String date;
+  final String? coins;
   final VoidCallback onGoHome;
 
   const _ResultView({
@@ -942,6 +1033,7 @@ class _ResultView extends StatelessWidget {
     this.rank,
     required this.coinsEarned,
     required this.date,
+    this.coins,
     required this.onGoHome,
   });
 
@@ -1051,7 +1143,11 @@ class _ResultView extends StatelessWidget {
                       const SizedBox(height: 4),
                       ShaderMask(
                         shaderCallback: (b) => const LinearGradient(
-                          colors: [AppColors.goldDark, AppColors.gold, AppColors.goldLight],
+                          colors: [
+                            AppColors.goldDark,
+                            AppColors.gold,
+                            AppColors.goldLight
+                          ],
                         ).createShader(b),
                         child: Text(
                           '$score',
@@ -1064,8 +1160,7 @@ class _ResultView extends StatelessWidget {
                         ),
                       ),
                       if (rank != null) ...[
-                        Divider(
-                            color: ac.surfaceVariant, height: 24),
+                        Divider(color: ac.surfaceVariant, height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

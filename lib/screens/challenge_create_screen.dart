@@ -18,8 +18,7 @@ class ChallengeCreateScreen extends ConsumerStatefulWidget {
       _ChallengeCreateScreenState();
 }
 
-class _ChallengeCreateScreenState
-    extends ConsumerState<ChallengeCreateScreen>
+class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen>
     with SingleTickerProviderStateMixin {
   String _selectedCategory = '';
   bool _challengeCreated = false;
@@ -62,7 +61,8 @@ class _ChallengeCreateScreenState
           ),
           backgroundColor: AppColors.surfaceBright,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       );
       return;
@@ -120,8 +120,7 @@ class _ChallengeCreateScreenState
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: SoundTap(
-          onTap: () => context.
-          pop(),
+          onTap: () => context.pop(),
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -221,11 +220,15 @@ class _ChallengeCreateScreenState
               return CategoryCard(
                 categoryKey: cat,
                 isSelected: selected,
-                onTap: () { SoundService().click(); setState(() => _selectedCategory = cat); },
-              )
-                  .animate(delay: (i * 65).ms)
-                  .fadeIn(duration: 320.ms)
-                  .slideY(begin: 0.12, end: 0, duration: 320.ms, curve: Curves.easeOutCubic);
+                onTap: () {
+                  SoundService().click();
+                  setState(() => _selectedCategory = cat);
+                },
+              ).animate(delay: (i * 65).ms).fadeIn(duration: 320.ms).slideY(
+                  begin: 0.12,
+                  end: 0,
+                  duration: 320.ms,
+                  curve: Curves.easeOutCubic);
             },
           ),
         ),
@@ -269,7 +272,11 @@ class _ChallengeCreateScreenState
                   height: 92,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.primaryDark, AppColors.primary, AppColors.primaryLight],
+                      colors: [
+                        AppColors.primaryDark,
+                        AppColors.primary,
+                        AppColors.primaryLight
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -296,7 +303,8 @@ class _ChallengeCreateScreenState
               );
             },
           ),
-        ).animate().scaleXY(begin: 0.6, end: 1.0, duration: 550.ms, curve: Curves.elasticOut),
+        ).animate().scaleXY(
+            begin: 0.6, end: 1.0, duration: 550.ms, curve: Curves.elasticOut),
         const SizedBox(height: 28),
         const Text(
           'Challenge Link Created!',
@@ -377,7 +385,8 @@ class _ChallengeCreateScreenState
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
@@ -405,18 +414,26 @@ class _ChallengeCreateScreenState
                 child: _GradientButton(
                   onPressed: () => _shareLink(link, userName),
                   isLoading: false,
-                  icon: _shareSuccess ? Icons.check_circle_rounded : Icons.share_rounded,
+                  icon: _shareSuccess
+                      ? Icons.check_circle_rounded
+                      : Icons.share_rounded,
                   label: _shareSuccess ? 'Shared!' : 'Share',
                   successState: _shareSuccess,
                 ),
               ),
             ],
           ),
-        ).animate(delay: 300.ms).fadeIn(duration: 400.ms).slideY(begin: 0.15, end: 0),
+        )
+            .animate(delay: 300.ms)
+            .fadeIn(duration: 400.ms)
+            .slideY(begin: 0.15, end: 0),
         const Spacer(flex: 2),
         // Back to home
         OutlinedButton(
-          onPressed: () { SoundService().click(); context.go('/home'); },
+          onPressed: () {
+            SoundService().click();
+            context.go('/home');
+          },
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textSecondary,
             side: const BorderSide(color: AppColors.border, width: 1.5),
@@ -470,12 +487,20 @@ class _GradientButton extends StatelessWidget {
               ? null
               : successState
                   ? const LinearGradient(
-                      colors: [Color(0xFF1E8449), AppColors.correctGreen, Color(0xFF55D98D)],
+                      colors: [
+                        Color(0xFF1E8449),
+                        AppColors.correctGreen,
+                        Color(0xFF55D98D)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
                   : const LinearGradient(
-                      colors: [AppColors.primaryDark, AppColors.primary, AppColors.primaryLight],
+                      colors: [
+                        AppColors.primaryDark,
+                        AppColors.primary,
+                        AppColors.primaryLight
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -485,7 +510,9 @@ class _GradientButton extends StatelessWidget {
               ? null
               : [
                   BoxShadow(
-                    color: (successState ? AppColors.correctGreen : AppColors.primary)
+                    color: (successState
+                            ? AppColors.correctGreen
+                            : AppColors.primary)
                         .withValues(alpha: 0.38),
                     blurRadius: 16,
                     offset: const Offset(0, 5),
