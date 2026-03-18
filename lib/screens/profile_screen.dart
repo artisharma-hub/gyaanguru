@@ -848,20 +848,23 @@ class _EditBottomSheetState extends State<_EditBottomSheet> {
   Widget build(BuildContext context) {
     final ac = context.ac;
     final viewInsets = MediaQuery.viewInsetsOf(context);
+    final screenHeight = MediaQuery.sizeOf(context).height;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: ac.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(color: ac.border2, width: 1),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: screenHeight * 0.88),
+      child: Container(
+        decoration: BoxDecoration(
+          color: ac.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: ac.border2, width: 1)),
         ),
-      ),
-      padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + viewInsets.bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // drag handle
           Center(
             child: Container(
@@ -1020,6 +1023,8 @@ class _EditBottomSheetState extends State<_EditBottomSheet> {
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

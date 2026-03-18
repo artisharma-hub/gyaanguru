@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../app/theme.dart';
 import '../services/sound_service.dart';
+
+// Cyan-blue active pill colors (vibrant, contrasts against dark indigo bar)
+const _cyanStart = Color(0xFF00B4D8);
+const _cyanEnd   = Color(0xFF48CAE4);
 
 class AppNavBar extends StatelessWidget {
   final int currentIndex;
@@ -18,114 +21,157 @@ class AppNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      height: 68,
-      decoration: BoxDecoration(
-        color: ac.surface,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: ac.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.09),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
+    return Padding(
+      // Floating margin — lifts bar off screen edge
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
+      child: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          // Dark indigo-blue opaque capsule
+          color: const Color(0xFF160E38),
+          borderRadius: BorderRadius.circular(35),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1.0,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: context.isDark ? 0.3 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: List.generate(_items.length, (i) {
-          final selected = currentIndex == i;
-          final item = _items[i];
-          return Expanded(
-            child: GestureDetector(
-              onTap: () { SoundService().click(); onTap(i); },
-              behavior: HitTestBehavior.opaque,
-              child: _NavItem(
-                icon:     selected ? item.$1 : item.$2,
-                label:    item.$3,
-                selected: selected,
-              ),
+          boxShadow: [
+            // Primary purple outer glow
+            BoxShadow(
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.30),
+              blurRadius: 32,
+              spreadRadius: 0,
+              offset: const Offset(0, 10),
             ),
-          );
-        }),
+            // Cyan active glow (always-on subtle tint)
+            BoxShadow(
+              color: _cyanStart.withValues(alpha: 0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+            // Depth shadow
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: List.generate(_items.length, (i) {
+            final selected = currentIndex == i;
+            final item = _items[i];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () { SoundService().click(); onTap(i); },
+                behavior: HitTestBehavior.opaque,
+                child: _NavItem(
+                  activeIcon:   item.$1,
+                  inactiveIcon: item.$2,
+                  label:        item.$3,
+                  selected:     selected,
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
+  final IconData activeIcon;
+  final IconData inactiveIcon;
   final String label;
   final bool selected;
 
-  const _NavItem({required this.icon, required this.label, required this.selected});
+  const _NavItem({
+    required this.activeIcon,
+    required this.inactiveIcon,
+    required this.label,
+    required this.selected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Animated pill with icon
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            gradient: selected
-                ? const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: selected
-                ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.32), blurRadius: 10, offset: const Offset(0, 3))]
-                : [],
-          ),
-          child: Icon(icon, color: selected ? Colors.white : ac.textMuted, size: 22),
-        )
-            .animate(key: ValueKey('${label}_$selected'))
-            .scaleXY(begin: selected ? 0.75 : 1.0, end: 1.0, duration: 400.ms, curve: Curves.elasticOut),
-
-        const SizedBox(height: 2),
-
-        // Always-visible label
-        AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 200),
-          style: TextStyle(
-            color: selected ? AppColors.primary : ac.textMuted,
-            fontFamily: 'Nunito',
-            fontSize: 10,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            letterSpacing: selected ? 0.2 : 0,
-          ),
-          child: Text(label),
+    return Center(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        // Pill expands horizontally to fit icon + label when active
+        padding: EdgeInsets.symmetric(
+          horizontal: selected ? 18 : 14,
+          vertical: 10,
         ),
-
-        // Active dot
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.only(top: 2),
-          width: selected ? 14 : 0,
-          height: selected ? 3 : 0,
-          decoration: BoxDecoration(
-            gradient: selected
-                ? const LinearGradient(colors: [AppColors.primary, AppColors.primaryLight])
-                : null,
-            borderRadius: BorderRadius.circular(2),
-          ),
+        decoration: BoxDecoration(
+          gradient: selected
+              ? const LinearGradient(
+                  colors: [_cyanStart, _cyanEnd],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: _cyanStart.withValues(alpha: 0.55),
+                    blurRadius: 18,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: _cyanStart.withValues(alpha: 0.20),
+                    blurRadius: 32,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : [],
         ),
-      ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon — filled when active, outlined when inactive
+            Icon(
+              selected ? activeIcon : inactiveIcon,
+              color: selected
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.38),
+              size: 20,
+            ),
+
+            // Label — Flexible prevents overflow when tab width is tight
+            Flexible(
+              child: AnimatedSize(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              child: selected
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            ),
+          ],
+        ),
+      )
+          .animate(key: ValueKey('${label}_$selected'))
+          .scaleXY(
+            begin: selected ? 0.82 : 1.0,
+            end: 1.0,
+            duration: 380.ms,
+            curve: Curves.elasticOut,
+          ),
     );
   }
 }

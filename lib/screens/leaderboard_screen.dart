@@ -5,10 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../app/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/leaderboard_provider.dart';
-import '../widgets/coin_display.dart';
-import '../widgets/vs_card.dart';
 import '../widgets/app_nav_bar.dart';
 import '../widgets/sound_tap.dart';
+import '../widgets/vs_card.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -28,12 +27,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     'cricket', 'bollywood', 'gk', 'math', 'science', 'hindi'
   ];
   static const _categoryNames = {
-    'cricket': 'Cricket',
-    'bollywood': 'Bollywood',
-    'gk': 'GK',
-    'math': 'Math',
-    'science': 'Science',
-    'hindi': 'Hindi',
+    'cricket': 'Cricket',   'bollywood': 'Bollywood',
+    'gk': 'GK',             'math': 'Math',
+    'science': 'Science',   'hindi': 'Hindi',
   };
 
   @override
@@ -57,51 +53,35 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     if (_tabController.indexIsChanging) return;
     setState(() => _activeTab = _tabController.index);
     switch (_tabController.index) {
-      case 0:
-        ref.read(leaderboardProvider.notifier).fetchGlobal();
-        break;
-      case 1:
-        ref.read(leaderboardProvider.notifier).fetchWeekly();
-        break;
-      case 2:
-        ref
-            .read(leaderboardProvider.notifier)
-            .fetchCategory(_selectedCategory);
-        break;
+      case 0: ref.read(leaderboardProvider.notifier).fetchGlobal();  break;
+      case 1: ref.read(leaderboardProvider.notifier).fetchWeekly(); break;
+      case 2: ref.read(leaderboardProvider.notifier).fetchCategory(_selectedCategory); break;
     }
   }
 
-  void _switchTab(int index) {
-    _tabController.animateTo(index);
-  }
+  void _switchTab(int index) => _tabController.animateTo(index);
 
   void _onNavTap(int index) {
     setState(() => _navIndex = index);
     switch (index) {
-      case 0:
-        context.go('/home');
-        break;
-      case 1:
-        context.go('/daily');
-        break;
-      case 3:
-        context.go('/profile');
-        break;
+      case 0: context.go('/home');    break;
+      case 1: context.go('/daily');   break;
+      case 3: context.go('/profile'); break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final lbState = ref.watch(leaderboardProvider);
-    final user = ref.watch(authProvider).valueOrNull;
-    final ac = context.ac;
+    final user    = ref.watch(authProvider).valueOrNull;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
       body: Column(
         children: [
-          // ── Teal gradient header ─────────────────────────────────────────
+          // ── Teal gradient header ───────────────────────────────────────
           Container(
             decoration: const BoxDecoration(
               gradient: AppColors.leaderboardGradient,
@@ -113,17 +93,17 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 children: [
                   // Title row
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                     child: Row(
                       children: [
                         GestureDetector(
                           onTap: () => context.go('/home'),
                           child: Container(
-                            width: 38,
-                            height: 38,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.arrow_back_ios_new_rounded,
                                 color: Colors.white, size: 16),
@@ -136,44 +116,29 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                             color: Colors.white,
                             fontFamily: 'Nunito',
                             fontWeight: FontWeight.w900,
-                            fontSize: 22,
-                            letterSpacing: -0.2,
+                            fontSize: 20,
                           ),
                         ),
                         const Spacer(),
-                        const SizedBox(width: 38), // balance
+                        const SizedBox(width: 36),
                       ],
                     ),
                   ),
 
-                  // ── Pill tabs inside gradient ────────────────────────────
+                  // Pill tabs
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2)),
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         children: [
-                          _PillTab(
-                            label: 'All time',
-                            active: _activeTab == 0,
-                            onTap: () => _switchTab(0),
-                          ),
-                          _PillTab(
-                            label: 'This week',
-                            active: _activeTab == 1,
-                            onTap: () => _switchTab(1),
-                          ),
-                          _PillTab(
-                            label: 'Category',
-                            active: _activeTab == 2,
-                            onTap: () => _switchTab(2),
-                          ),
+                          _PillTab(label: 'All time',  active: _activeTab == 0, onTap: () => _switchTab(0)),
+                          _PillTab(label: 'This week', active: _activeTab == 1, onTap: () => _switchTab(1)),
+                          _PillTab(label: 'Category',  active: _activeTab == 2, onTap: () => _switchTab(2)),
                         ],
                       ),
                     ),
@@ -183,188 +148,128 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             ),
           ),
 
-          // ── Category dropdown (tab 2 only) ─────────────────────────────
-          const SizedBox(height: 8),
-
-              // ── Category dropdown (tab 2 only) ───────────────────────────
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _activeTab == 2
-                    ? Padding(
-                        key: const ValueKey('cat-dropdown'),
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        child: _CategoryDropdown(
-                          value: _selectedCategory,
-                          categories: _categories,
-                          categoryNames: _categoryNames,
-                          onChanged: (v) {
-                            if (v != null) {
-                              setState(() => _selectedCategory = v);
-                              ref
-                                  .read(leaderboardProvider.notifier)
-                                  .fetchCategory(v);
-                            }
-                          },
-                        ),
-                      )
-                    : const SizedBox.shrink(key: ValueKey('no-dropdown')),
-              ),
-
-              // ── Player list ──────────────────────────────────────────────
-              Expanded(
-                child: lbState.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation(AppColors.primaryLight),
-                    ),
-                  ),
-                  error: (e, _) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: AppColors.wrongRed.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.error_outline_rounded,
-                              color: AppColors.wrongRed, size: 32),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'Failed to load',
-                          style: TextStyle(
-                            color: ac.textPrimary,
-                            fontFamily: 'Nunito',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        SoundTap(
-                          onTap: _onTabChanged,
-                          child: ElevatedButton(
-                            onPressed: _onTabChanged,
-                            child: const Text('Retry'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  data: (data) {
-                    if (data == null) return const SizedBox.shrink();
-                    final players =
-                        ((data['players'] ?? data['leaderboard'] ?? [])
-                                as List)
-                            .cast<Map<String, dynamic>>();
-                    final myRank = (data['my_rank'] as num?)?.toInt();
-                    final myEntry =
-                        data['my_entry'] as Map<String, dynamic>?;
-                    final showMyEntry =
-                        myRank != null && myRank > 50 && myEntry != null;
-
-                    // Split top-3 from rest
-                    final top3 = players
-                        .where((p) =>
-                            ((p['rank'] as num?)?.toInt() ??
-                                players.indexOf(p) + 1) <=
-                            3)
-                        .toList();
-                    final rest = players
-                        .where((p) =>
-                            ((p['rank'] as num?)?.toInt() ??
-                                players.indexOf(p) + 1) >
-                            3)
-                        .toList();
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-                      itemCount: 1 +
-                          rest.length +
-                          (showMyEntry ? 2 : 0),
-                      itemBuilder: (context, i) {
-                        // Item 0: podium
-                        if (i == 0) {
-                          return top3.isEmpty
-                              ? const SizedBox.shrink()
-                              : _PodiumRow(players: top3)
-                                  .animate()
-                                  .fadeIn(duration: 350.ms)
-                                  .slideY(begin: -0.06);
+          // Category dropdown (tab 2 only)
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _activeTab == 2
+                ? Padding(
+                    key: const ValueKey('cat'),
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    child: _CategoryDropdown(
+                      value: _selectedCategory,
+                      categories: _categories,
+                      categoryNames: _categoryNames,
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _selectedCategory = v);
+                          ref.read(leaderboardProvider.notifier).fetchCategory(v);
                         }
-
-                        final listIndex = i - 1;
-
-                        if (showMyEntry && listIndex == rest.length) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(children: [
-                              Expanded(child: Divider(color: ac.border)),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12),
-                                child: Text(
-                                  'Your Rank',
-                                  style: TextStyle(
-                                    color: ac.textMuted,
-                                    fontFamily: 'Nunito',
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                              Expanded(child: Divider(color: ac.border)),
-                            ]),
-                          );
-                        }
-                        if (showMyEntry && listIndex == rest.length + 1) {
-                          return _PlayerTile(
-                            player: myEntry,
-                            rank: myRank,
-                            isMe: true,
-                            isTop3: false,
-                          );
-                        }
-
-                        final p = rest[listIndex];
-                        final rank =
-                            (p['rank'] as num?)?.toInt() ??
-                                (listIndex + 4);
-                        final isMe = p['id']?.toString() == user?.id;
-                        return _PlayerTile(
-                          player: p,
-                          rank: rank,
-                          isMe: isMe,
-                          isTop3: false,
-                        )
-                            .animate(delay: (listIndex * 35).ms)
-                            .fadeIn(duration: 240.ms)
-                            .slideX(begin: 0.08, end: 0);
                       },
-                    );
-                  },
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('no-cat')),
+          ),
+
+          // Player list
+          Expanded(
+            child: lbState.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(AppColors.primaryLight),
+                  strokeWidth: 2,
                 ),
               ),
-            ],
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        color: AppColors.wrongRed, size: 40),
+                    const SizedBox(height: 12),
+                    const Text('Failed to load',
+                        style: TextStyle(color: AppColors.textSecondary,
+                            fontFamily: 'Nunito')),
+                    const SizedBox(height: 12),
+                    SoundTap(
+                      onTap: _onTabChanged,
+                      child: ElevatedButton(
+                          onPressed: _onTabChanged,
+                          child: const Text('Retry')),
+                    ),
+                  ],
+                ),
+              ),
+              data: (data) {
+                if (data == null) return const SizedBox.shrink();
+                final players = ((data['players'] ?? data['leaderboard'] ?? []) as List)
+                    .cast<Map<String, dynamic>>();
+                final myRank  = (data['my_rank'] as num?)?.toInt();
+                final myEntry = data['my_entry'] as Map<String, dynamic>?;
+                final showMyEntry = myRank != null && myRank > 50 && myEntry != null;
+
+                final top3 = players
+                    .where((p) => ((p['rank'] as num?)?.toInt() ?? players.indexOf(p) + 1) <= 3)
+                    .toList();
+                final rest = players
+                    .where((p) => ((p['rank'] as num?)?.toInt() ?? players.indexOf(p) + 1) > 3)
+                    .toList();
+
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  itemCount: 1 + rest.length + (showMyEntry ? 2 : 0),
+                  itemBuilder: (context, i) {
+                    if (i == 0) {
+                      return top3.isEmpty
+                          ? const SizedBox.shrink()
+                          : _PodiumRow(players: top3)
+                              .animate().fadeIn(duration: 350.ms);
+                    }
+                    final idx = i - 1;
+                    if (showMyEntry && idx == rest.length) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(children: [
+                          const Expanded(child: Divider(color: AppColors.border)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text('Your Rank',
+                                style: const TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontFamily: 'Nunito',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                          const Expanded(child: Divider(color: AppColors.border)),
+                        ]),
+                      );
+                    }
+                    if (showMyEntry && idx == rest.length + 1) {
+                      return _PlayerRow(player: myEntry, rank: myRank, isMe: true);
+                    }
+                    final p    = rest[idx];
+                    final rank = (p['rank'] as num?)?.toInt() ?? (idx + 4);
+                    final isMe = p['id']?.toString() == user?.id;
+                    return _PlayerRow(player: p, rank: rank, isMe: isMe)
+                        .animate(delay: (idx * 30).ms)
+                        .fadeIn(duration: 220.ms)
+                        .slideX(begin: 0.06, end: 0);
+                  },
+                );
+              },
+            ),
           ),
+        ],
+      ),
     );
   }
 }
 
-// ── Pill Tab ─────────────────────────────────────────────────────────────────
+// ── Pill Tab ──────────────────────────────────────────────────────────────────
 class _PillTab extends StatelessWidget {
   final String label;
   final bool active;
   final VoidCallback onTap;
-
-  const _PillTab({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
+  const _PillTab({required this.label, required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -372,32 +277,20 @@ class _PillTab extends StatelessWidget {
       child: SoundTap(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeInOut,
-          height: 38,
-          decoration: active
-              ? BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(13),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                )
-              : const BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.all(Radius.circular(13)),
-                ),
+          duration: const Duration(milliseconds: 200),
+          height: 36,
+          decoration: BoxDecoration(
+            color: active ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: active
+                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 6)]
+                : null,
+          ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                color: active
-                    ? AppColors.primaryDark
-                    : Colors.white.withValues(alpha: 0.75),
+                color: active ? const Color(0xFF0A7C72) : Colors.white.withValues(alpha: 0.80),
                 fontFamily: 'Nunito',
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
@@ -410,425 +303,260 @@ class _PillTab extends StatelessWidget {
   }
 }
 
-// ── Category Dropdown ────────────────────────────────────────────────────────
+// ── Category Dropdown ─────────────────────────────────────────────────────────
 class _CategoryDropdown extends StatelessWidget {
   final String value;
   final List<String> categories;
   final Map<String, String> categoryNames;
   final ValueChanged<String?> onChanged;
-
-  const _CategoryDropdown({
-    required this.value,
-    required this.categories,
-    required this.categoryNames,
-    required this.onChanged,
-  });
+  const _CategoryDropdown({required this.value, required this.categories,
+      required this.categoryNames, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
     return DropdownButtonFormField<String>(
       initialValue: value,
-      dropdownColor: ac.surfaceVariant,
-      style: TextStyle(
-        color: ac.textPrimary,
-        fontFamily: 'Nunito',
-        fontWeight: FontWeight.w600,
-        fontSize: 14,
-      ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded,
-          color: AppColors.primaryLight),
+      dropdownColor: AppColors.surfaceVariant,
+      style: const TextStyle(
+          color: AppColors.textPrimary, fontFamily: 'Nunito',
+          fontWeight: FontWeight.w600, fontSize: 14),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryLight),
       decoration: InputDecoration(
         filled: true,
-        fillColor: ac.surfaceVariant,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: ac.border),
-        ),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.border)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: ac.border),
-        ),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.border)),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       ),
       items: categories
-          .map((c) => DropdownMenuItem(
-                value: c,
-                child: Text(categoryNames[c] ?? c),
-              ))
+          .map((c) => DropdownMenuItem(value: c, child: Text(categoryNames[c] ?? c)))
           .toList(),
       onChanged: onChanged,
     );
   }
 }
 
-// ── Podium Row (top 3) ───────────────────────────────────────────────────────
+// ── Podium Row (top 3) ────────────────────────────────────────────────────────
 class _PodiumRow extends StatelessWidget {
   final List<Map<String, dynamic>> players;
-
   const _PodiumRow({required this.players});
 
-  Map<String, dynamic>? _playerAt(int rank) {
+  Map<String, dynamic>? _at(int rank) {
     try {
       return players.firstWhere(
         (p) => (p['rank'] as num?)?.toInt() == rank,
         orElse: () => players.length >= rank ? players[rank - 1] : {},
       );
-    } catch (_) {
-      return null;
-    }
+    } catch (_) { return null; }
   }
 
   @override
   Widget build(BuildContext context) {
-    final first = _playerAt(1);
-    final second = _playerAt(2);
-    final third = _playerAt(3);
+    final first  = _at(1);
+    final second = _at(2);
+    final third  = _at(3);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+      padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 2nd place
           if (second != null)
-            Expanded(
-              child: _PodiumCard(
-                player: second,
-                rank: 2,
-                medalColor: const Color(0xFFCBD5E1),
-                medalLabel: '2nd',
-                avatarRadius: 28,
-                height: 140,
-              ),
-            ),
-
-          const SizedBox(width: 8),
-
-          // 1st place — taller + gold crown
+            Expanded(child: _PodiumItem(player: second, rank: 2, avatarRadius: 28, nameSize: 12)),
+          const SizedBox(width: 6),
           if (first != null)
-            Expanded(
-              flex: 1,
-              child: _PodiumCard(
-                player: first,
-                rank: 1,
-                medalColor: AppColors.gold,
-                medalLabel: '1st',
-                avatarRadius: 34,
-                height: 168,
-                showCrown: true,
-              ),
-            ),
-
-          const SizedBox(width: 8),
-
-          // 3rd place
+            Expanded(child: _PodiumItem(player: first,  rank: 1, avatarRadius: 36, nameSize: 13, showCrown: true)),
+          const SizedBox(width: 6),
           if (third != null)
-            Expanded(
-              child: _PodiumCard(
-                player: third,
-                rank: 3,
-                medalColor: const Color(0xFFCD7F32),
-                medalLabel: '3rd',
-                avatarRadius: 26,
-                height: 128,
-              ),
-            ),
+            Expanded(child: _PodiumItem(player: third,  rank: 3, avatarRadius: 26, nameSize: 12)),
         ],
       ),
     );
   }
 }
 
-class _PodiumCard extends StatelessWidget {
+class _PodiumItem extends StatelessWidget {
   final Map<String, dynamic> player;
   final int rank;
-  final Color medalColor;
-  final String medalLabel;
   final double avatarRadius;
-  final double height;
+  final double nameSize;
   final bool showCrown;
 
-  const _PodiumCard({
-    required this.player,
-    required this.rank,
-    required this.medalColor,
-    required this.medalLabel,
-    required this.avatarRadius,
-    required this.height,
+  static const _rankColors = {
+    1: Color(0xFFFFB800),
+    2: Color(0xFFB0BEC5),
+    3: Color(0xFFCD7F32),
+  };
+
+  const _PodiumItem({
+    required this.player, required this.rank,
+    required this.avatarRadius, required this.nameSize,
     this.showCrown = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    final name = player['name']?.toString() ?? 'Player';
+    final name        = player['name']?.toString() ?? 'Player';
     final avatarColor = player['avatar_color']?.toString() ?? '#6C63FF';
-    final score = ((player['wins'] ??
-                player['weekly_score'] ??
-                player['score'] ??
-                0) as num)
-        .toInt();
+    final score       = ((player['wins'] ?? player['weekly_score'] ?? player['score'] ?? 0) as num).toInt();
+    final rankColor   = _rankColors[rank] ?? AppColors.textSecondary;
 
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            medalColor.withValues(alpha: 0.18),
-            ac.surface,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showCrown)
+          const Text('👑', style: TextStyle(fontSize: 20))
+        else
+          const SizedBox(height: 24),
+        const SizedBox(height: 4),
+        // Avatar with rank-colored ring
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: rankColor, width: 2.5),
+          ),
+          child: AvatarWidget(name: name, avatarColor: avatarColor, radius: avatarRadius),
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: medalColor.withValues(alpha: 0.35),
+        const SizedBox(height: 8),
+        // Name
+        Text(
+          name,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w700,
+            fontSize: nameSize,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: medalColor.withValues(alpha: 0.28),
-            blurRadius: 16,
+        const SizedBox(height: 3),
+        // Score
+        Text(
+          _formatScore(score),
+          style: TextStyle(
+            color: rankColor,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w800,
+            fontSize: nameSize,
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (showCrown)
-            const Text('👑', style: TextStyle(fontSize: 18))
-          else
-            const SizedBox(height: 4),
-          const SizedBox(height: 4),
-          AvatarWidget(
-            name: name,
-            avatarColor: avatarColor,
-            radius: avatarRadius,
+        ),
+        const SizedBox(height: 10),
+        // Step base — rank 1 is tallest
+        Container(
+          height: rank == 1 ? 52 : rank == 2 ? 38 : 28,
+          decoration: BoxDecoration(
+            color: rankColor.withValues(alpha: 0.18),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            border: Border.all(color: rankColor.withValues(alpha: 0.40), width: 1),
           ),
-          const SizedBox(height: 6),
-          // Medal badge
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  medalColor.withValues(alpha: 0.8),
-                  medalColor,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: medalColor.withValues(alpha: 0.28),
-                  blurRadius: 16,
-                ),
-              ],
-            ),
+          child: Center(
             child: Text(
-              medalLabel,
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.w900,
-                fontSize: 11,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              name,
+              '$rank',
               style: TextStyle(
-                color: ac.textPrimary,
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: 2),
-          ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [AppColors.goldDark, AppColors.gold, AppColors.goldLight],
-            ).createShader(b),
-            child: Text(
-              '$score',
-              style: const TextStyle(
-                color: Colors.white,
+                color: rankColor,
                 fontFamily: 'Nunito',
                 fontWeight: FontWeight.w900,
-                fontSize: 15,
+                fontSize: 16,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  String _formatScore(int s) {
+    if (s >= 1000) return '${(s / 1000).toStringAsFixed(3).replaceAll('.', ',')}';
+    return s.toString();
   }
 }
 
-// ── Player Tile (rank 4+) ────────────────────────────────────────────────────
-class _PlayerTile extends StatelessWidget {
+// ── Player Row (rank 4+) ──────────────────────────────────────────────────────
+class _PlayerRow extends StatelessWidget {
   final Map<String, dynamic> player;
   final int rank;
   final bool isMe;
-  final bool isTop3;
-
-  const _PlayerTile({
-    required this.player,
-    required this.rank,
-    required this.isMe,
-    required this.isTop3,
-  });
-
-  Color get _medalColor {
-    if (rank == 1) return AppColors.gold;
-    if (rank == 2) return const Color(0xFFCBD5E1);
-    if (rank == 3) return const Color(0xFFCD7F32);
-    return AppColors.textSecondary;
-  }
+  const _PlayerRow({required this.player, required this.rank, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    final name = player['name']?.toString() ?? 'Player';
+    final name        = player['name']?.toString() ?? 'Player';
     final avatarColor = player['avatar_color']?.toString() ?? '#FF4500';
-    final score = ((player['wins'] ??
-                player['weekly_score'] ??
-                player['score'] ??
-                0) as num)
-        .toInt();
-    final coins = (player['coins'] as num?)?.toInt();
+    final score       = ((player['wins'] ?? player['weekly_score'] ?? player['score'] ?? 0) as num).toInt();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        gradient: isMe
-            ? LinearGradient(colors: [
-                AppColors.primary.withValues(alpha: 0.18),
-                AppColors.primary.withValues(alpha: 0.05),
-              ])
-            : null,
-        color: isMe ? null : ac.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: isMe
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isMe
-              ? AppColors.primary.withValues(alpha: 0.5)
-              : isTop3
-                  ? _medalColor.withValues(alpha: 0.28)
-                  : ac.border,
-          width: isMe ? 1.5 : 1,
+          color: isMe ? AppColors.primary.withValues(alpha: 0.45) : AppColors.border,
+          width: 1,
         ),
-        boxShadow: isMe
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.28),
-                  blurRadius: 16,
-                ),
-              ]
-            : isTop3
-                ? [
-                    BoxShadow(
-                      color: _medalColor.withValues(alpha: 0.12),
-                      blurRadius: 12,
-                    ),
-                  ]
-                : [],
       ),
       child: Row(
         children: [
-          // Rank badge
+          // Rank number
           SizedBox(
-            width: 40,
-            child: isTop3
-                ? Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [
-                        _medalColor.withValues(alpha: 0.8),
-                        _medalColor,
-                      ]),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: _medalColor.withValues(alpha: 0.28),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$rank',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  )
-                : Text(
-                    '#$rank',
-                    style: TextStyle(
-                      color: isMe ? AppColors.primaryLight : ac.textMuted,
-                      fontFamily: 'Nunito',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-          ),
-          AvatarWidget(
-              name: name, avatarColor: avatarColor, radius: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isMe ? '$name (You)' : name,
-                  style: TextStyle(
-                    color:
-                        isMe ? AppColors.primaryLight : ac.textPrimary,
-                    fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (coins != null)
-                  CoinDisplay(coins: coins, fontSize: 11),
-              ],
+            width: 32,
+            child: Text(
+              rank.toString(),
+              style: TextStyle(
+                color: isMe ? AppColors.primaryLight : AppColors.textSecondary,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
-          ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [AppColors.gold, AppColors.goldLight],
-            ).createShader(b),
+          const SizedBox(width: 8),
+          // Avatar
+          AvatarWidget(name: name, avatarColor: avatarColor, radius: 19),
+          const SizedBox(width: 12),
+          // Name
+          Expanded(
             child: Text(
-              '$score',
-              style: const TextStyle(
-                color: Colors.white,
+              isMe ? '$name (You)' : name,
+              style: TextStyle(
+                color: isMe ? AppColors.primaryLight : AppColors.textPrimary,
                 fontFamily: 'Nunito',
-                fontWeight: FontWeight.w900,
-                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Score in teal
+          Text(
+            _formatScore(score),
+            style: const TextStyle(
+              color: AppColors.primaryLight,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatScore(int s) {
+    if (s >= 1000) return '${(s / 1000).toStringAsFixed(3).replaceAll('.', ',')}';
+    return s.toString();
   }
 }

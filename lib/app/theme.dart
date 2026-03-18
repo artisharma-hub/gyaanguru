@@ -3,65 +3,78 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Static brand colors — Soft Dark Neon theme
+// Static brand colors — HQ Trivia style (Purple / Pink / Blue)
 // ═══════════════════════════════════════════════════════════════════════════
 class AppColors {
   AppColors._();
 
-  // Primary — Teal
-  static const primary      = Color(0xFF00C8AA);
-  static const primaryLight = Color(0xFF33D4BC);
-  static const primaryDark  = Color(0xFF009B82);
+  // Primary — Vibrant Purple
+  static const primary      = Color(0xFF6C63FF);
+  static const primaryLight = Color(0xFFA66CFF);
+  static const primaryDark  = Color(0xFF4A42E8);
 
-  // Accent — Royal Blue
-  static const accent      = Color(0xFF4169E1);
-  static const accentLight = Color(0xFF6B8EF5);
-  static const accentDark  = Color(0xFF2A4FCC);
+  // Accent — Hot Pink
+  static const accent      = Color(0xFFFF6CAB);
+  static const accentLight = Color(0xFFFF9CC4);
+  static const accentDark  = Color(0xFFE84888);
+
+  // Sky Blue
+  static const skyBlue      = Color(0xFF4FC3F7);
+  static const skyBlueLight = Color(0xFF80D8FF);
 
   // Gold — Vibrant Amber
-  static const gold      = Color(0xFFFFB800);
-  static const goldLight = Color(0xFFFFD050);
-  static const goldDark  = Color(0xFFCC9200);
+  static const gold      = Color(0xFFFFD700);
+  static const goldLight = Color(0xFFFFE566);
+  static const goldDark  = Color(0xFFCC9900);
 
   // Feedback
-  static const correctGreen = Color(0xFF2ECC71);
-  static const correctLight = Color(0xFF55D98D);
-  static const wrongRed     = Color(0xFFE74C3C);
-  static const wrongLight   = Color(0xFFFF6B5E);
+  static const correctGreen = Color(0xFF4CAF50);
+  static const correctLight = Color(0xFF81C784);
+  static const wrongRed     = Color(0xFFEF5350);
+  static const wrongLight   = Color(0xFFEF9A9A);
 
   // Timer
-  static const timerSafe   = Color(0xFF2ECC71);
-  static const timerDanger = Color(0xFFE74C3C);
+  static const timerSafe   = Color(0xFF4CAF50);
+  static const timerDanger = Color(0xFFEF5350);
 
-  // Highlight / Hot Pink
-  static const highlight = Color(0xFFFF4DA8);
+  // Highlight
+  static const highlight = Color(0xFFFF6CAB);
 
-  // ── Ultra-Dark Game Theme static values ────────────────────────────────
-  static const background     = Color(0xFF0A0D1A);
-  static const surface        = Color(0xFF141929);
-  static const surfaceVariant = Color(0xFF1B1F35);
-  static const surfaceBright  = Color(0xFF1E2540);
+  // ── HQ Trivia Game Theme static values ─────────────────────────────────
+  static const background     = Color(0xFF1E0A3C);
+  static const surface        = Color(0xFF2A1158);
+  static const surfaceVariant = Color(0xFF351870);
+  static const surfaceBright  = Color(0xFF421E85);
   static const textPrimary    = Color(0xFFFFFFFF);
-  static const textSecondary  = Color(0xFF8B9CB6);
-  static const textMuted      = Color(0xFF4A5468);
-  static const border         = Color(0xFF1E2640);
-  static const border2        = Color(0xFF252D48);
+  static const textSecondary  = Color(0xFFC5B4E3);
+  static const textMuted      = Color(0xFF7B6A9A);
+  static const border         = Color(0xFF3D2070);
+  static const border2        = Color(0xFF4D2E85);
 
   // Category brand colors
-  static const cricket   = Color(0xFF00B4FF);
-  static const bollywood = Color(0xFFFF4DA8);
-  static const gk        = Color(0xFFF5A623);
-  static const math      = Color(0xFF6C63FF);
-  static const science   = Color(0xFF2ECC71);
-  static const hindi     = Color(0xFF00D4FF);
+  static const cricket   = Color(0xFF4FC3F7);  // sky blue
+  static const bollywood = Color(0xFFFF6CAB);  // hot pink
+  static const gk        = Color(0xFFFFD700);  // gold
+  static const math      = Color(0xFFA66CFF);  // lavender
+  static const science   = Color(0xFF00E5C5);  // cyan
+  static const hindi     = Color(0xFFFF9F00);  // amber
 
   // ── Gradient helpers ────────────────────────────────────────────────────
+  // Purple gradient (primary CTA)
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primaryDark, primary, primaryLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  // HQ-style purple → pink (main buttons, podium, leaderboard)
+  static const LinearGradient hqGradient = LinearGradient(
+    colors: [Color(0xFF6C63FF), Color(0xFFA66CFF), Color(0xFFFF6CAB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Pink gradient
   static const LinearGradient accentGradient = LinearGradient(
     colors: [accentDark, accent, accentLight],
     begin: Alignment.topLeft,
@@ -86,16 +99,16 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  // Soft background gradient for screens
+  // Soft deep-purple background gradient for screens
   static const LinearGradient bgGradient = LinearGradient(
-    colors: [Color(0xFF0A0D1A), Color(0xFF0D1225)],
+    colors: [Color(0xFF1E0A3C), Color(0xFF2D1259), Color(0xFF1A0A38)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  // Leaderboard teal→blue header gradient
+  // Leaderboard header gradient
   static const LinearGradient leaderboardGradient = LinearGradient(
-    colors: [Color(0xFF0A7C72), Color(0xFF0D3580)],
+    colors: [Color(0xFF6C63FF), Color(0xFFFF6CAB)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -119,7 +132,7 @@ class AppColors {
     );
   }
 
-  // ── Soft neon glow shadows ───────────────────────────────────────────────
+  // ── Soft shadows ─────────────────────────────────────────────────────────
   static List<BoxShadow> softGlow(Color color, {double blur = 16, double spread = 0}) => [
         BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: blur, spreadRadius: spread),
         BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: blur * 2.0, spreadRadius: spread),
@@ -174,17 +187,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     border2:        Color(0xFFCACAFF),
   );
 
-  // Ultra-Dark Game Theme — primary theme
+  // HQ Trivia Game Theme — primary theme
   static const dark = AppThemeColors(
-    background:     Color(0xFF0A0D1A),
-    surface:        Color(0xFF141929),
-    surfaceVariant: Color(0xFF1B1F35),
-    surfaceBright:  Color(0xFF1E2540),
+    background:     Color(0xFF1E0A3C),
+    surface:        Color(0xFF2A1158),
+    surfaceVariant: Color(0xFF351870),
+    surfaceBright:  Color(0xFF421E85),
     textPrimary:    Color(0xFFFFFFFF),
-    textSecondary:  Color(0xFF8B9CB6),
-    textMuted:      Color(0xFF4A5468),
-    border:         Color(0xFF1E2640),
-    border2:        Color(0xFF252D48),
+    textSecondary:  Color(0xFFC5B4E3),
+    textMuted:      Color(0xFF7B6A9A),
+    border:         Color(0xFF3D2070),
+    border2:        Color(0xFF4D2E85),
   );
 
   @override
@@ -270,35 +283,37 @@ class AppSizes {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Decoration helpers (context-aware)
+// Decoration helpers
 // ═══════════════════════════════════════════════════════════════════════════
+
+/// Glassmorphism card — frosted white overlay on gradient backgrounds
 BoxDecoration glassCard(BuildContext context, {double radius = 20, Color? borderColor}) {
-  final ac = context.ac;
   return BoxDecoration(
-    color: ac.surface,
+    color: Colors.white.withValues(alpha: 0.08),
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(color: borderColor ?? ac.border, width: 1.0),
+    border: Border.all(
+      color: borderColor ?? Colors.white.withValues(alpha: 0.15),
+      width: 1.0,
+    ),
     boxShadow: [
       BoxShadow(
-        color: AppColors.primary.withValues(alpha: 0.07),
-        blurRadius: 20,
-        offset: const Offset(0, 6),
-      ),
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.25),
-        blurRadius: 8,
-        offset: const Offset(0, 2),
+        color: Colors.black.withValues(alpha: 0.20),
+        blurRadius: 24,
+        offset: const Offset(0, 8),
       ),
     ],
   );
 }
 
-/// Soft neon-bordered card — subtle glow, no harsh contrast
+/// Soft glow-bordered card
 BoxDecoration neonCard({required Color color, double radius = 20, Color? bg}) => BoxDecoration(
-      color: bg ?? AppColors.surface,
+      color: bg ?? Colors.white.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(radius),
-      border: Border.all(color: color.withValues(alpha: 0.40), width: 1.5),
-      boxShadow: AppColors.softGlow(color, blur: 14),
+      border: Border.all(color: color.withValues(alpha: 0.50), width: 1.5),
+      boxShadow: [
+        BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 6)),
+        BoxShadow(color: color.withValues(alpha: 0.10), blurRadius: 40, offset: const Offset(0, 10)),
+      ],
     );
 
 /// Gradient category card with soft glow
@@ -345,19 +360,19 @@ class AppTheme {
         scheme: const ColorScheme.dark(
           primary:                 AppColors.primary,
           onPrimary:               Colors.white,
-          primaryContainer:        Color(0xFF0D2A26),
+          primaryContainer:        Color(0xFF2D1259),
           onPrimaryContainer:      AppColors.primaryLight,
           secondary:               AppColors.accent,
-          onSecondary:             Color(0xFF15172E),
-          secondaryContainer:      Color(0xFF00334A),
+          onSecondary:             Colors.white,
+          secondaryContainer:      Color(0xFF351870),
           onSecondaryContainer:    AppColors.accentLight,
           tertiary:                AppColors.gold,
           onTertiary:              Color(0xFF1A0E00),
-          surface:                 Color(0xFF141929),
+          surface:                 Color(0xFF2A1158),
           onSurface:               Color(0xFFFFFFFF),
-          surfaceContainerHighest: Color(0xFF1B1F35),
-          outline:                 Color(0xFF1E2640),
-          outlineVariant:          Color(0xFF252D48),
+          surfaceContainerHighest: Color(0xFF351870),
+          outline:                 Color(0xFF3D2070),
+          outlineVariant:          Color(0xFF4D2E85),
           error:                   AppColors.wrongRed,
           onError:                 Colors.white,
         ),
@@ -401,7 +416,7 @@ class AppTheme {
           disabledBackgroundColor: colors.surfaceVariant,
           disabledForegroundColor: colors.textMuted,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           elevation: 0,
           shadowColor: Colors.transparent,
           textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
@@ -410,17 +425,17 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          foregroundColor: AppColors.primaryLight,
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryLight,
           textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 14),
         ),
       ),
@@ -439,14 +454,14 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colors.surfaceVariant,
+        fillColor: Colors.white.withValues(alpha: 0.08),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.rLg),
           borderSide: BorderSide(color: colors.border2, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.rLg),
-          borderSide: BorderSide(color: colors.border, width: 1),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.rLg),
@@ -468,7 +483,7 @@ class AppTheme {
       ),
 
       appBarTheme: AppBarTheme(
-        backgroundColor: colors.background,
+        backgroundColor: Colors.transparent,
         foregroundColor: colors.textPrimary,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
@@ -502,7 +517,7 @@ class AppTheme {
       ),
 
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: isDark ? colors.surfaceBright : const Color(0xFF1A1D38),
+        backgroundColor: isDark ? colors.surfaceBright : const Color(0xFF2A1158),
         contentTextStyle: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rLg)),
         behavior: SnackBarBehavior.floating,
@@ -543,9 +558,9 @@ class AppTheme {
       ),
 
       chipTheme: ChipThemeData(
-        backgroundColor: colors.surfaceVariant,
-        selectedColor: AppColors.primary.withValues(alpha: 0.18),
-        side: BorderSide(color: colors.border),
+        backgroundColor: Colors.white.withValues(alpha: 0.08),
+        selectedColor: AppColors.primary.withValues(alpha: 0.22),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSizes.rPill)),
         labelStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 12),
       ),

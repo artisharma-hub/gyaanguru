@@ -119,6 +119,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        toolbarHeight: 72,
         leading: SoundTap(
           onTap: () => context.pop(),
           child: Container(
@@ -155,13 +156,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen>
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF15172E), Color(0xFF1A1D38)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.bgGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -435,8 +430,8 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen>
             context.go('/home');
           },
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.textSecondary,
-            side: const BorderSide(color: AppColors.border, width: 1.5),
+            foregroundColor: Colors.white70,
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.20), width: 1.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -448,7 +443,7 @@ class _ChallengeCreateScreenState extends ConsumerState<ChallengeCreateScreen>
               fontFamily: 'Nunito',
               fontWeight: FontWeight.w700,
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: Colors.white70,
             ),
           ),
         ).animate(delay: 450.ms).fadeIn(duration: 350.ms),
