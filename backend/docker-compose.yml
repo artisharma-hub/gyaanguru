@@ -38,6 +38,7 @@ services:
       JWT_ALGORITHM: HS256
       JWT_EXPIRE_HOURS: 720
       ENVIRONMENT: development
+      PORT: 8000
     depends_on:
       db:
         condition: service_healthy
@@ -45,7 +46,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: python run.py
 
 volumes:
   pgdata:
