@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../app/theme.dart';
+import '../services/sound_service.dart';
 
 enum AnswerState { none, selected, correct, wrong }
 
@@ -30,6 +31,7 @@ class _AnswerButtonState extends State<AnswerButton> {
     if (widget.onTap == null) return;
     setState(() => _pressed = true);
     HapticFeedback.lightImpact();
+    SoundService().click();
   }
 
   void _onTapUp(_) => setState(() => _pressed = false);

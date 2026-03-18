@@ -8,6 +8,8 @@ import '../providers/auth_provider.dart';
 import '../widgets/app_nav_bar.dart';
 import '../widgets/coin_display.dart';
 import '../widgets/vs_card.dart';
+import '../widgets/sound_tap.dart';
+import '../services/sound_service.dart';
 
 const _avatarColors = [
   '#FF4500', '#0091FF', '#FF0080', '#B44DFF', '#00BCD4', '#69F0AE',
@@ -344,7 +346,7 @@ class _HeaderCard extends StatelessWidget {
           Positioned(
             top: 0,
             right: 0,
-            child: GestureDetector(
+            child: SoundTap(
               onTap: onEditTap,
               child: Container(
                 width: 36,
@@ -480,7 +482,7 @@ class _HeaderCard extends StatelessWidget {
                     ],
                   ),
                   child: Text(
-                    '🔥 ${user.winStreak} streak',
+                    '${user.winStreak} streak',
                     style: const TextStyle(
                       color: AppColors.gold,
                       fontFamily: 'Nunito',
@@ -797,7 +799,7 @@ class _SettingsTile extends StatelessWidget {
           ? Icon(Icons.arrow_forward_ios_rounded,
               color: ac.textMuted, size: 14)
           : null,
-      onTap: onTap,
+      onTap: () { SoundService().click(); onTap(); },
     );
   }
 }
@@ -919,7 +921,7 @@ class _EditBottomSheetState extends State<_EditBottomSheet> {
             children: _avatarColors.map((hex) {
               final isSelected = _selectedHex == hex;
               final c = _parseColor(hex);
-              return GestureDetector(
+              return SoundTap(
                 onTap: () => _selectColor(hex),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -976,7 +978,7 @@ class _EditBottomSheetState extends State<_EditBottomSheet> {
           const SizedBox(height: 20),
 
           // save gradient button
-          GestureDetector(
+          SoundTap(
             onTap: widget.saving ? null : widget.onSave,
             child: Container(
               height: 50,
@@ -1037,7 +1039,7 @@ class _PhotoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: SoundTap(
         onTap: onTap,
         child: Container(
           height: 44,

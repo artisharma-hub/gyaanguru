@@ -9,6 +9,7 @@ import '../models/question_model.dart';
 import '../services/api_service.dart';
 import '../widgets/answer_button.dart';
 import '../widgets/coin_display.dart';
+import '../widgets/sound_tap.dart';
 
 class DailyChallengeScreen extends ConsumerStatefulWidget {
   const DailyChallengeScreen({super.key});
@@ -629,7 +630,7 @@ class _IntroView extends StatelessWidget {
                       const Spacer(),
 
                       // Start button
-                      GestureDetector(
+                      SoundTap(
                         onTap: onStart,
                         child: Container(
                           height: 58,
@@ -830,7 +831,7 @@ class _AlreadyPlayedView extends StatelessWidget {
 
                         const SizedBox(height: 32),
 
-                        GestureDetector(
+                        SoundTap(
                           onTap: onGoHome,
                           child: Container(
                             height: 54,
@@ -1122,7 +1123,7 @@ class _ResultView extends StatelessWidget {
                 const Spacer(),
 
                 // Home button
-                GestureDetector(
+                SoundTap(
                   onTap: onGoHome,
                   child: Container(
                     height: 58,

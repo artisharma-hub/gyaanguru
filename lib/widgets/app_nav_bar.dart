@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../app/theme.dart';
+import '../services/sound_service.dart';
 
 class AppNavBar extends StatelessWidget {
   final int currentIndex;
@@ -44,7 +45,7 @@ class AppNavBar extends StatelessWidget {
           final item = _items[i];
           return Expanded(
             child: GestureDetector(
-              onTap: () => onTap(i),
+              onTap: () { SoundService().click(); onTap(i); },
               behavior: HitTestBehavior.opaque,
               child: _NavItem(
                 icon:     selected ? item.$1 : item.$2,

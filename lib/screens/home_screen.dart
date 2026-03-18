@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../app/theme.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/category_card.dart';
-import '../widgets/coin_display.dart';
 import '../widgets/vs_card.dart';
 import '../widgets/app_nav_bar.dart';
+import '../widgets/sound_tap.dart';
+import '../services/api_service.dart';
+import '../services/sound_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -19,10 +21,28 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _selectedCategory = '';
   int _navIndex = 0;
+  Map<String, int> _questionCounts = {};
 
   static const _categories = [
     'cricket', 'bollywood', 'gk', 'math', 'science', 'hindi',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final cats = await ApiService().getCategories();
+      final counts = <String, int>{};
+      for (final c in cats) {
+        counts[c['key'] as String] = (c['count'] as num).toInt();
+      }
+      if (mounted) setState(() => _questionCounts = counts);
+    } catch (_) {}
+  }
 
   void _onNavTap(int index) {
     setState(() => _navIndex = index);
@@ -205,6 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               categoryKey: cat,
                               isSelected: _selectedCategory == cat,
                               onTap: () => setState(() => _selectedCategory = cat),
+                              questionCount: _questionCounts[cat],
                             )
                                 .animate(delay: (i * 60).ms)
                                 .fadeIn(duration: 320.ms)
@@ -250,11 +271,13 @@ class _CategoryCardWrapper extends StatefulWidget {
   final String categoryKey;
   final bool isSelected;
   final VoidCallback onTap;
+  final int? questionCount;
 
   const _CategoryCardWrapper({
     required this.categoryKey,
     required this.isSelected,
     required this.onTap,
+    this.questionCount,
   });
 
   @override
@@ -323,8 +346,10 @@ class _CategoryCardWrapperState extends State<_CategoryCardWrapper>
             categoryKey: widget.categoryKey,
             isSelected: widget.isSelected,
             onTap: () {
+              SoundService().click();
               widget.onTap();
             },
+            questionCount: widget.questionCount,
           ),
           // Glow ring when selected
           if (widget.isSelected)
@@ -367,207 +392,182 @@ class _HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ac = context.ac;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: ac.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar
-          GestureDetector(
-            onTap: () => context.go('/profile'),
-            child: AvatarWidget(
-              name: user.name,
-              avatarColor: user.avatarColor,
-              imagePath: user.avatarImagePath,
-              radius: 26,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Greeting + streak
+          // Greeting text
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hey, ${user.name.split(' ').first}! 👋',
+                  'Hi, ${user.name.split(' ').first}',
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w800,
-                    fontSize: AppSizes.sp(context, 22),
+                    fontWeight: FontWeight.w900,
+                    fontSize: AppSizes.sp(context, 26),
+                    letterSpacing: -0.3,
                   ),
                 ),
                 const SizedBox(height: 2),
-                if (user.winStreak > 0)
-                  Row(
-                    children: [
-                      const Text('🔥', style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${user.winStreak} Win Streak',
-                        style: const TextStyle(
-                          color: AppColors.gold,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  Text(
-                    'Ready to battle?',
-                    style: TextStyle(
-                      color: ac.textSecondary,
-                      fontFamily: 'Nunito',
-                      fontSize: 12,
-                    ),
+                Text(
+                  user.winStreak > 0
+                      ? '🔥 ${user.winStreak}-game win streak!'
+                      : "Let's make this day productive",
+                  style: TextStyle(
+                    color: user.winStreak > 0
+                        ? AppColors.gold
+                        : ac.textSecondary,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
+                ),
               ],
             ),
           ),
-          // Coin display — gold accent
-          CoinDisplay(coins: user.coins, fontSize: 16),
+          // Avatar with tap
+          SoundTap(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.6),
+                  width: 2.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 14,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: AvatarWidget(
+                name: user.name,
+                avatarColor: user.avatarColor,
+                imagePath: user.avatarImagePath,
+                radius: 26,
+              ),
+            ),
+          ),
         ],
       ),
-    ).animate().fadeIn(duration: 420.ms).slideY(begin: -0.12, end: 0, curve: Curves.easeOut);
+    ).animate().fadeIn(duration: 420.ms).slideY(begin: -0.10, end: 0, curve: Curves.easeOut);
   }
 }
 
-// ── Stats bar ──────────────────────────────────────────────────────────────────
+// ── Stats bar — Ranking + Points pills ────────────────────────────────────────
 class _StatsBar extends StatelessWidget {
   final dynamic user;
   const _StatsBar({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    final winRate = user.totalMatches > 0
-        ? (user.wins / user.totalMatches * 100).toStringAsFixed(0)
-        : '0';
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      decoration: BoxDecoration(
-        color: ac.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.border2,
-          width: 1,
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _StatTile(
-            icon: Icons.sports_esports_rounded,
-            label: 'Matches',
-            value: '${user.totalMatches}',
-            color: AppColors.accent,
+          // Ranking pill
+          Expanded(
+            child: _StatPill(
+              icon: Icons.emoji_events_rounded,
+              iconColor: AppColors.gold,
+              label: 'Ranking',
+              value: '${user.totalMatches > 0 ? user.wins : 0}',
+              gradientColors: [
+                AppColors.gold.withValues(alpha: 0.18),
+                AppColors.goldDark.withValues(alpha: 0.08),
+              ],
+              borderColor: AppColors.gold.withValues(alpha: 0.35),
+            ),
           ),
-          _Divider(),
-          _StatTile(
-            icon: Icons.emoji_events_rounded,
-            label: 'Wins',
-            value: '${user.wins}',
-            color: AppColors.gold,
-          ),
-          _Divider(),
-          _StatTile(
-            icon: Icons.show_chart_rounded,
-            label: 'Win Rate',
-            value: '$winRate%',
-            color: AppColors.correctGreen,
-          ),
-          _Divider(),
-          _StatTile(
-            icon: Icons.local_fire_department_rounded,
-            label: 'Best Streak',
-            value: '${user.bestStreak}',
-            color: AppColors.highlight,
+          const SizedBox(width: 12),
+          // Points pill
+          Expanded(
+            child: _StatPill(
+              icon: Icons.monetization_on_rounded,
+              iconColor: AppColors.primaryLight,
+              label: 'Points',
+              value: '${user.coins}',
+              gradientColors: [
+                AppColors.primary.withValues(alpha: 0.18),
+                AppColors.primaryDark.withValues(alpha: 0.08),
+              ],
+              borderColor: AppColors.primary.withValues(alpha: 0.35),
+            ),
           ),
         ],
       ),
     )
-        .animate(delay: 160.ms)
-        .fadeIn(duration: 380.ms)
-        .slideY(begin: 0.12, end: 0, curve: Curves.easeOut);
+        .animate(delay: 150.ms)
+        .fadeIn(duration: 360.ms)
+        .slideY(begin: 0.10, end: 0, curve: Curves.easeOut);
   }
 }
 
-class _Divider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 30,
-      color: AppColors.border2,
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
+class _StatPill extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
   final String label;
   final String value;
-  final Color color;
+  final List<Color> gradientColors;
+  final Color borderColor;
 
-  const _StatTile({
+  const _StatPill({
     required this.icon,
+    required this.iconColor,
     required this.label,
     required this.value,
-    required this.color,
+    required this.gradientColors,
+    required this.borderColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final ac = context.ac;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Column(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Icon(icon, color: iconColor, size: 22),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 14),
-              const SizedBox(width: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                ),
+              ),
               Text(
                 value,
-                style: TextStyle(
-                  color: ac.textPrimary,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
                   fontFamily: 'Nunito',
                   fontWeight: FontWeight.w900,
-                  fontSize: 15,
+                  fontSize: 18,
+                  height: 1.1,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 1),
-          Text(
-            label,
-            style: TextStyle(
-              color: ac.textMuted,
-              fontFamily: 'Nunito',
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
           ),
         ],
       ),
@@ -596,6 +596,7 @@ class _FindOpponentButtonState extends State<_FindOpponentButton> {
       onTapUp: widget.enabled
           ? (_) {
               setState(() => _pressed = false);
+              SoundService().click();
               widget.onTap();
             }
           : null,
@@ -675,7 +676,9 @@ class _ChallengeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
+    return SoundTap(
+      onTap: onTap,
+      child: OutlinedButton.icon(
       onPressed: onTap,
       icon: const Icon(Icons.share_rounded, size: 18),
       label: const Text(
@@ -693,6 +696,7 @@ class _ChallengeButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: AppColors.primary.withValues(alpha: 0.06),
       ),
+    ),
     );
   }
 }

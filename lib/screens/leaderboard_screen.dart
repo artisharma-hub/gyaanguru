@@ -8,6 +8,7 @@ import '../providers/leaderboard_provider.dart';
 import '../widgets/coin_display.dart';
 import '../widgets/vs_card.dart';
 import '../widgets/app_nav_bar.dart';
+import '../widgets/sound_tap.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -98,90 +99,92 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     return Scaffold(
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.bgGradient),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // ── Header ──────────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
-                child: Row(
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (b) => const LinearGradient(
-                        colors: [Colors.white, AppColors.primaryLight],
-                      ).createShader(b),
-                      child: const Text(
-                        'Leaderboard',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w900,
-                          fontSize: 26,
-                          letterSpacing: -0.3,
+      body: Column(
+        children: [
+          // ── Teal gradient header ─────────────────────────────────────────
+          Container(
+            decoration: const BoxDecoration(
+              gradient: AppColors.leaderboardGradient,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // Title row
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => context.go('/home'),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                                color: Colors.white, size: 16),
+                          ),
                         ),
-                      ),
+                        const Spacer(),
+                        const Text(
+                          'Leaderboard',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 22,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const Spacer(),
+                        const SizedBox(width: 38), // balance
+                      ],
                     ),
-                    const Spacer(),
-                    Container(
-                      width: 44,
-                      height: 44,
+                  ),
+
+                  // ── Pill tabs inside gradient ────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFD97706), AppColors.gold],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(alpha: 0.28),
-                            blurRadius: 16,
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          _PillTab(
+                            label: 'All time',
+                            active: _activeTab == 0,
+                            onTap: () => _switchTab(0),
+                          ),
+                          _PillTab(
+                            label: 'This week',
+                            active: _activeTab == 1,
+                            onTap: () => _switchTab(1),
+                          ),
+                          _PillTab(
+                            label: 'Category',
+                            active: _activeTab == 2,
+                            onTap: () => _switchTab(2),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.emoji_events_rounded,
-                          color: Colors.white, size: 22),
                     ),
-                  ],
-                ),
-              ),
-
-              // ── 3-tab pill selector ─────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: ac.surface,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: ac.border),
                   ),
-                  child: Row(
-                    children: [
-                      _PillTab(
-                        label: 'All-Time',
-                        active: _activeTab == 0,
-                        onTap: () => _switchTab(0),
-                      ),
-                      _PillTab(
-                        label: 'Weekly',
-                        active: _activeTab == 1,
-                        onTap: () => _switchTab(1),
-                      ),
-                      _PillTab(
-                        label: 'Category',
-                        active: _activeTab == 2,
-                        onTap: () => _switchTab(2),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
+            ),
+          ),
 
-              const SizedBox(height: 10),
+          // ── Category dropdown (tab 2 only) ─────────────────────────────
+          const SizedBox(height: 8),
 
               // ── Category dropdown (tab 2 only) ───────────────────────────
               AnimatedSwitcher(
@@ -240,9 +243,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                           ),
                         ),
                         const SizedBox(height: 14),
-                        ElevatedButton(
-                          onPressed: _onTabChanged,
-                          child: const Text('Retry'),
+                        SoundTap(
+                          onTap: _onTabChanged,
+                          child: ElevatedButton(
+                            onPressed: _onTabChanged,
+                            child: const Text('Retry'),
+                          ),
                         ),
                       ],
                     ),
@@ -344,8 +350,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }
@@ -365,7 +369,7 @@ class _PillTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: SoundTap(
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
@@ -373,28 +377,27 @@ class _PillTab extends StatelessWidget {
           height: 38,
           decoration: active
               ? BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight],
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(13),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.28),
-                      blurRadius: 16,
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 )
-              : BoxDecoration(
+              : const BoxDecoration(
                   color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.all(Radius.circular(13)),
                 ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
                 color: active
-                    ? Colors.white
-                    : AppColors.textSecondary,
+                    ? AppColors.primaryDark
+                    : Colors.white.withValues(alpha: 0.75),
                 fontFamily: 'Nunito',
                 fontWeight: FontWeight.w700,
                 fontSize: 13,

@@ -2,8 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
 /// Singleton sound service.
-/// Place real .mp3 files in assets/sounds/ to enable in-game audio.
-/// All methods are no-ops if files are missing or muted.
+/// WAV files are in assets/sounds/ — all generated tones.
 class SoundService {
   static final SoundService _instance = SoundService._();
   factory SoundService() => _instance;
@@ -22,12 +21,12 @@ class SoundService {
     }
   }
 
-  Future<void> correct()      => _play('sounds/correct.mp3');
-  Future<void> wrong()        => _play('sounds/wrong.mp3');
-  Future<void> click()        => _play('sounds/click.mp3');
-  Future<void> matchFound()   => _play('sounds/match_found.mp3');
-  Future<void> victory()      => _play('sounds/victory.mp3');
-  Future<void> defeat()       => _play('sounds/defeat.mp3');
-  Future<void> timerWarning() => _play('sounds/timer_warning.mp3');
-  Future<void> countdown()    => _play('sounds/countdown.mp3');
+  Future<void> correct()      => _play('sounds/correct.wav');
+  Future<void> wrong()        => _play('sounds/wrong.wav');
+  Future<void> click()        => _play('sounds/click.wav');
+  Future<void> matchFound()   => _play('sounds/match_found.wav');
+  Future<void> victory()      => _play('sounds/victory.wav');
+  Future<void> defeat()       => _play('sounds/defeat.wav');
+  Future<void> timerWarning() => _play('sounds/timer_warning.wav');
+  Future<void> countdown()    => _play('sounds/countdown.wav');
 }

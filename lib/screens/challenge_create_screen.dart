@@ -7,6 +7,8 @@ import '../providers/auth_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../widgets/category_card.dart';
 import '../widgets/share_sheet.dart';
+import '../widgets/sound_tap.dart';
+import '../services/sound_service.dart';
 
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
   const ChallengeCreateScreen({super.key});
@@ -117,8 +119,9 @@ class _ChallengeCreateScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: GestureDetector(
-          onTap: () => context.pop(),
+        leading: SoundTap(
+          onTap: () => context.
+          pop(),
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -218,7 +221,7 @@ class _ChallengeCreateScreenState
               return CategoryCard(
                 categoryKey: cat,
                 isSelected: selected,
-                onTap: () => setState(() => _selectedCategory = cat),
+                onTap: () { SoundService().click(); setState(() => _selectedCategory = cat); },
               )
                   .animate(delay: (i * 65).ms)
                   .fadeIn(duration: 320.ms)
@@ -413,7 +416,7 @@ class _ChallengeCreateScreenState
         const Spacer(flex: 2),
         // Back to home
         OutlinedButton(
-          onPressed: () => context.go('/home'),
+          onPressed: () { SoundService().click(); context.go('/home'); },
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textSecondary,
             side: const BorderSide(color: AppColors.border, width: 1.5),
@@ -457,7 +460,7 @@ class _GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disabled = onPressed == null;
-    return GestureDetector(
+    return SoundTap(
       onTap: onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),

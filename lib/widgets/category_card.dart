@@ -6,27 +6,35 @@ class CategoryCard extends StatelessWidget {
   final String categoryKey;
   final bool isSelected;
   final VoidCallback onTap;
+  final int? questionCount;
 
   const CategoryCard({
     super.key,
     required this.categoryKey,
     required this.isSelected,
     required this.onTap,
+    this.questionCount,
   });
 
   static const _data = {
-    'cricket':   _CategoryData('Cricket & Sports',  Icons.sports_cricket_rounded,    AppColors.cricket),
-    'bollywood': _CategoryData('Bollywood & OTT',   Icons.movie_filter_rounded,      AppColors.bollywood),
-    'gk':        _CategoryData('Indian GK',         Icons.menu_book_rounded,         AppColors.gk),
-    'math':      _CategoryData('Rapid Math',        Icons.functions_rounded,         AppColors.math),
-    'science':   _CategoryData('Science & Tech',    Icons.biotech_rounded,           AppColors.science),
-    'hindi':     _CategoryData('Hindi Wordplay',    Icons.record_voice_over_rounded, AppColors.hindi),
+    'cricket':   _CategoryData('Cricket & Sports',  '🏏', AppColors.cricket),
+    'bollywood': _CategoryData('Bollywood & OTT',   '🎬', AppColors.bollywood),
+    'gk':        _CategoryData('Indian GK',         '🌍', AppColors.gk),
+    'math':      _CategoryData('Rapid Math',        '🧮', AppColors.math),
+    'science':   _CategoryData('Science & Tech',    '🔬', AppColors.science),
+    'hindi':     _CategoryData('Hindi Wordplay',    '📝', AppColors.hindi),
+  };
+
+  // default question counts per category
+  static const _counts = {
+    'cricket': 10, 'bollywood': 10, 'gk': 10,
+    'math': 10, 'science': 10, 'hindi': 10,
   };
 
   @override
   Widget build(BuildContext context) {
     final d = _data[categoryKey] ?? _data['cricket']!;
-    final ac = context.ac;
+    final count = questionCount ?? _counts[categoryKey] ?? 10;
 
     return GestureDetector(
       onTap: onTap,
@@ -35,136 +43,129 @@ class CategoryCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         decoration: isSelected
             ? BoxDecoration(
-                gradient: AppColors.categoryGradientRich(d.color),
-                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(
+                  colors: [
+                    d.color.withValues(alpha: 0.85),
+                    d.color.withValues(alpha: 0.55),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
-                  BoxShadow(color: d.color.withValues(alpha: 0.42), blurRadius: 22, spreadRadius: 1, offset: const Offset(0, 8)),
-                  BoxShadow(color: d.color.withValues(alpha: 0.16), blurRadius: 38, offset: const Offset(0, 16)),
+                  BoxShadow(color: d.color.withValues(alpha: 0.50), blurRadius: 24, spreadRadius: 2, offset: const Offset(0, 8)),
+                  BoxShadow(color: d.color.withValues(alpha: 0.20), blurRadius: 40, offset: const Offset(0, 14)),
                 ],
               )
             : BoxDecoration(
-                color: ac.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: ac.border, width: 1.5),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: d.color.withValues(alpha: context.isDark ? 0.12 : 0.07),
-                    blurRadius: 14,
+                    color: d.color.withValues(alpha: 0.10),
+                    blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-        child: Stack(
-          children: [
-            if (!isSelected)
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              // Ambient glow blob top-right
               Positioned(
-                bottom: -8,
-                right: -8,
+                top: -20,
+                right: -20,
                 child: Container(
-                  width: 52,
-                  height: 52,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: d.color.withValues(alpha: context.isDark ? 0.10 : 0.07),
+                    color: d.color.withValues(alpha: isSelected ? 0.25 : 0.12),
                   ),
                 ),
               ),
-            if (!isSelected)
-              Positioned(
-                top: 10,
-                left: 10,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(color: d.color.withValues(alpha: 0.55), shape: BoxShape.circle),
-                ),
-              ),
-            if (isSelected)
-              Positioned(
-                top: -28,
-                right: -18,
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.11),
-                  ),
-                ),
-              ),
-            Positioned.fill(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildIcon(d),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      d.name,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : ac.textPrimary,
-                        fontFamily: 'Nunito',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        height: 1.25,
-                        letterSpacing: 0.1,
+              // Content
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Emoji icon in container
+                      Container(
+                        width: 62,
+                        height: 62,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: isSelected
+                              ? Colors.white.withValues(alpha: 0.22)
+                              : d.color.withValues(alpha: 0.14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: d.color.withValues(alpha: isSelected ? 0.30 : 0.18),
+                              blurRadius: 12,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            d.emoji,
+                            style: const TextStyle(fontSize: 30),
+                          ),
+                        ),
+                      )
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .moveY(begin: 0, end: isSelected ? -3 : -2, duration: 1600.ms, curve: Curves.easeInOut),
+                      const SizedBox(height: 10),
+                      Text(
+                        d.name,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$count questions',
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white.withValues(alpha: 0.75)
+                              : AppColors.textMuted,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       )
           .animate(key: ValueKey(isSelected))
-          .scaleXY(begin: isSelected ? 0.91 : 1.0, end: 1.0, duration: 380.ms, curve: Curves.elasticOut),
+          .scaleXY(
+            begin: isSelected ? 0.92 : 1.0,
+            end: 1.0,
+            duration: 380.ms,
+            curve: Curves.elasticOut,
+          ),
     );
-  }
-
-  Widget _buildIcon(_CategoryData d) {
-    final iconWidget = Container(
-      width: 68,
-      height: 68,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: isSelected
-            ? LinearGradient(
-                colors: [Colors.white.withValues(alpha: 0.28), Colors.white.withValues(alpha: 0.10)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : LinearGradient(
-                colors: [d.color.withValues(alpha: 0.18), d.color.withValues(alpha: 0.07)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-        boxShadow: isSelected
-            ? [BoxShadow(color: Colors.white.withValues(alpha: 0.22), blurRadius: 10, spreadRadius: 1)]
-            : [BoxShadow(color: d.color.withValues(alpha: 0.14), blurRadius: 9, offset: const Offset(0, 3))],
-      ),
-      child: Icon(d.icon, color: isSelected ? Colors.white : d.color, size: 34),
-    );
-
-    if (isSelected) {
-      return iconWidget
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scaleXY(begin: 1.0, end: 1.08, duration: 900.ms, curve: Curves.easeInOut)
-          .shimmer(color: Colors.white.withValues(alpha: 0.18), duration: 1800.ms);
-    }
-
-    return iconWidget
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .moveY(begin: 0, end: -4, duration: 1800.ms, curve: Curves.easeInOut);
   }
 }
 
 class _CategoryData {
   final String name;
-  final IconData icon;
+  final String emoji;
   final Color color;
-  const _CategoryData(this.name, this.icon, this.color);
+  const _CategoryData(this.name, this.emoji, this.color);
 }

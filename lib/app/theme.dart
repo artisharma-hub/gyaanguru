@@ -8,20 +8,20 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  // Primary — Electric Violet
-  static const primary      = Color(0xFF6C63FF);
-  static const primaryLight = Color(0xFF8B84FF);
-  static const primaryDark  = Color(0xFF4A42CC);
+  // Primary — Teal
+  static const primary      = Color(0xFF00C8AA);
+  static const primaryLight = Color(0xFF33D4BC);
+  static const primaryDark  = Color(0xFF009B82);
 
-  // Accent — Neon Cyan
-  static const accent      = Color(0xFF00D4FF);
-  static const accentLight = Color(0xFF4DE0FF);
-  static const accentDark  = Color(0xFF00A8CC);
+  // Accent — Royal Blue
+  static const accent      = Color(0xFF4169E1);
+  static const accentLight = Color(0xFF6B8EF5);
+  static const accentDark  = Color(0xFF2A4FCC);
 
-  // Gold — Warm Amber
-  static const gold      = Color(0xFFF5A623);
-  static const goldLight = Color(0xFFFFCC60);
-  static const goldDark  = Color(0xFFD98C00);
+  // Gold — Vibrant Amber
+  static const gold      = Color(0xFFFFB800);
+  static const goldLight = Color(0xFFFFD050);
+  static const goldDark  = Color(0xFFCC9200);
 
   // Feedback
   static const correctGreen = Color(0xFF2ECC71);
@@ -36,16 +36,16 @@ class AppColors {
   // Highlight / Hot Pink
   static const highlight = Color(0xFFFF4DA8);
 
-  // ── Soft Dark Neon static values (used in const contexts) ─────────────
-  static const background     = Color(0xFF15172E);
-  static const surface        = Color(0xFF1C1F3A);
-  static const surfaceVariant = Color(0xFF20244A);
-  static const surfaceBright  = Color(0xFF282C58);
+  // ── Ultra-Dark Game Theme static values ────────────────────────────────
+  static const background     = Color(0xFF0A0D1A);
+  static const surface        = Color(0xFF141929);
+  static const surfaceVariant = Color(0xFF1B1F35);
+  static const surfaceBright  = Color(0xFF1E2540);
   static const textPrimary    = Color(0xFFFFFFFF);
-  static const textSecondary  = Color(0xFFA0A3C0);
-  static const textMuted      = Color(0xFF6A6D8E);
-  static const border         = Color(0xFF252848);
-  static const border2        = Color(0xFF2F3360);
+  static const textSecondary  = Color(0xFF8B9CB6);
+  static const textMuted      = Color(0xFF4A5468);
+  static const border         = Color(0xFF1E2640);
+  static const border2        = Color(0xFF252D48);
 
   // Category brand colors
   static const cricket   = Color(0xFF00B4FF);
@@ -88,9 +88,16 @@ class AppColors {
 
   // Soft background gradient for screens
   static const LinearGradient bgGradient = LinearGradient(
-    colors: [Color(0xFF15172E), Color(0xFF1A1D38)],
+    colors: [Color(0xFF0A0D1A), Color(0xFF0D1225)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
+  );
+
+  // Leaderboard teal→blue header gradient
+  static const LinearGradient leaderboardGradient = LinearGradient(
+    colors: [Color(0xFF0A7C72), Color(0xFF0D3580)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static LinearGradient categoryGradient(Color c) => LinearGradient(
@@ -167,17 +174,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     border2:        Color(0xFFCACAFF),
   );
 
-  // Soft Dark Neon — primary theme
+  // Ultra-Dark Game Theme — primary theme
   static const dark = AppThemeColors(
-    background:     Color(0xFF15172E),
-    surface:        Color(0xFF1C1F3A),
-    surfaceVariant: Color(0xFF20244A),
-    surfaceBright:  Color(0xFF282C58),
+    background:     Color(0xFF0A0D1A),
+    surface:        Color(0xFF141929),
+    surfaceVariant: Color(0xFF1B1F35),
+    surfaceBright:  Color(0xFF1E2540),
     textPrimary:    Color(0xFFFFFFFF),
-    textSecondary:  Color(0xFFA0A3C0),
-    textMuted:      Color(0xFF6A6D8E),
-    border:         Color(0xFF252848),
-    border2:        Color(0xFF2F3360),
+    textSecondary:  Color(0xFF8B9CB6),
+    textMuted:      Color(0xFF4A5468),
+    border:         Color(0xFF1E2640),
+    border2:        Color(0xFF252D48),
   );
 
   @override
@@ -338,7 +345,7 @@ class AppTheme {
         scheme: const ColorScheme.dark(
           primary:                 AppColors.primary,
           onPrimary:               Colors.white,
-          primaryContainer:        Color(0xFF20204A),
+          primaryContainer:        Color(0xFF0D2A26),
           onPrimaryContainer:      AppColors.primaryLight,
           secondary:               AppColors.accent,
           onSecondary:             Color(0xFF15172E),
@@ -346,11 +353,11 @@ class AppTheme {
           onSecondaryContainer:    AppColors.accentLight,
           tertiary:                AppColors.gold,
           onTertiary:              Color(0xFF1A0E00),
-          surface:                 Color(0xFF1C1F3A),
+          surface:                 Color(0xFF141929),
           onSurface:               Color(0xFFFFFFFF),
-          surfaceContainerHighest: Color(0xFF20244A),
-          outline:                 Color(0xFF252848),
-          outlineVariant:          Color(0xFF2F3360),
+          surfaceContainerHighest: Color(0xFF1B1F35),
+          outline:                 Color(0xFF1E2640),
+          outlineVariant:          Color(0xFF252D48),
           error:                   AppColors.wrongRed,
           onError:                 Colors.white,
         ),

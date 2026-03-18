@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../app/theme.dart';
 import '../providers/challenge_provider.dart';
 import '../widgets/vs_card.dart';
+import '../widgets/sound_tap.dart';
+import '../services/sound_service.dart';
 
 class ChallengeAcceptScreen extends ConsumerStatefulWidget {
   final String token;
@@ -186,7 +188,7 @@ class _ChallengeAcceptScreenState
                       ),
                     ).animate(delay: 200.ms).fadeIn(duration: 350.ms),
                     const SizedBox(height: 32),
-                    GestureDetector(
+                    SoundTap(
                       onTap: () => context.go('/home'),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -414,7 +416,7 @@ class _ChallengeAcceptScreenState
                 ),
                 const SizedBox(height: 20),
                 // ── Accept button ───────────────────────────────────────
-                GestureDetector(
+                SoundTap(
                   onTap: _accepting ? null : _accept,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -477,7 +479,7 @@ class _ChallengeAcceptScreenState
                 const SizedBox(height: 10),
                 // ── Decline button ──────────────────────────────────────
                 TextButton(
-                  onPressed: () => context.go('/home'),
+                  onPressed: () { SoundService().click(); context.go('/home'); },
                   style: TextButton.styleFrom(
                     overlayColor: AppColors.textMuted.withValues(alpha: 0.10),
                     padding: const EdgeInsets.symmetric(vertical: 12),

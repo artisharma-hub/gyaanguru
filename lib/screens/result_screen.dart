@@ -9,6 +9,7 @@ import '../providers/match_provider.dart';
 import '../services/sound_service.dart';
 import '../widgets/coin_display.dart';
 import '../widgets/vs_card.dart';
+import '../widgets/sound_tap.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
@@ -487,7 +488,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                                   : '0',
                               color: _isWinner ? AppColors.gold : ac.textSecondary,
                               icon: Icons.local_fire_department_rounded,
-                              suffix: _isWinner ? ' 🔥' : '',
+                              suffix: _isWinner ? '' : '',
                             ),
                             Container(
                               width: 1,
@@ -509,7 +510,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     const SizedBox(height: 24),
 
                     // ── Rematch button: gradient primaryDark→primary→primaryLight, 56h
-                    GestureDetector(
+                    SoundTap(
                       onTap: _rematch,
                       child: Container(
                         height: 56,
@@ -563,6 +564,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     // ── Home button — outlined ────────────────────────────
                     OutlinedButton.icon(
                       onPressed: () {
+                        SoundService().click();
                         ref.read(matchProvider.notifier).reset();
                         context.go('/home');
                       },

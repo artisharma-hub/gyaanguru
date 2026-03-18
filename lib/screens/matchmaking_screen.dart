@@ -10,6 +10,7 @@ import '../providers/match_provider.dart';
 import '../services/api_service.dart';
 import '../services/sound_service.dart';
 import '../widgets/vs_card.dart';
+import '../widgets/sound_tap.dart';
 
 class MatchmakingScreen extends ConsumerStatefulWidget {
   final String category;
@@ -540,7 +541,7 @@ class _BotFallbackCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // Play vs Bot gradient button
-          GestureDetector(
+          SoundTap(
             onTap: onPlayBot,
             child: Container(
               width: double.infinity,
@@ -814,7 +815,7 @@ class _ErrorWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Retry button
-          GestureDetector(
+          SoundTap(
             onTap: onRetry,
             child: Container(
               width: double.infinity,
