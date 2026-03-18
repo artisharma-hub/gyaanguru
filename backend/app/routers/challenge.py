@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,40 +17,51 @@ from ..utils.deps import get_current_user
 router = APIRouter(prefix="/api/challenge", tags=["challenge"])
 
 
-@router.get("/open/{token}", response_class=HTMLResponse)
-async def open_challenge_link(token: str):
+def _challenge_response(challenge: Challenge, challenger: Optional[User]) -> dict:
+    return {
+        "status": "success",
+        "data": {
+            "token": challenge.token,
+            "challenger": {
+                "id": challenger.id if challenger else "",
+                "name": challenger.name if challenger else "Unknown",
+                "avatar_color": challenger.avatar_color if challenger else "#6C63FF",
+            },
+            "category": challenge.category,
+            "challenge_status": challenge.status,
+            "expires_at": challenge.expires_at.isoformat(),
+        },
+    }
+
+
+@router.get("/open/{token}")
+async def get_challenge_by_link(
+    token: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
     """
-    HTTP redirect page — makes the share link clickable in WhatsApp/SMS.
-    Browser opens this URL → JS redirects to gyaanguru://challenge/{token} → app opens.
+    API endpoint — returns JSON challenge data for the given share token.
+    Used by the mobile app when a user taps a challenge deeplink.
     """
-    deep_link = f"gyaanguru:///challenge/accept/{token}"
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gyaan Guru Challenge</title>
-  <style>
-    body {{ background:#07080F; color:#fff; font-family:sans-serif;
-           display:flex; flex-direction:column; align-items:center;
-           justify-content:center; height:100vh; margin:0; text-align:center; }}
-    h2  {{ color:#FF4500; font-size:1.6rem; margin-bottom:.5rem; }}
-    p   {{ color:#7080A0; font-size:.95rem; }}
-    a   {{ display:inline-block; margin-top:1.5rem; padding:.9rem 2.2rem;
-           background:#FF4500; color:#fff; text-decoration:none;
-           border-radius:14px; font-weight:700; font-size:1rem; }}
-  </style>
-</head>
-<body>
-  <h2>⚔️ Gyaan Guru Challenge</h2>
-  <p>Opening the app…</p>
-  <a href="{deep_link}">Open in Gyaan Guru</a>
-  <script>
-    setTimeout(function() {{ window.location.href = "{deep_link}"; }}, 300);
-  </script>
-</body>
-</html>"""
-    return HTMLResponse(content=html)
+    result = await db.execute(select(Challenge).where(Challenge.token == token))
+    challenge = result.scalar_one_or_none()
+    if challenge is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"status": "error", "message": "Challenge not found"},
+        )
+
+    if datetime.now(timezone.utc) > challenge.expires_at.replace(tzinfo=timezone.utc):
+        challenge.status = "expired"
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail={"status": "error", "message": "Challenge has expired"},
+        )
+
+    result2 = await db.execute(select(User).where(User.id == challenge.challenger_id))
+    challenger = result2.scalar_one_or_none()
+    return _challenge_response(challenge, challenger)
 
 
 @router.post("/create")
@@ -70,9 +81,10 @@ async def create_challenge(
     db.add(challenge)
     await db.flush()
 
+    # Share link points to the HTML deeplink page (no /api/ prefix)
     return {
         "token": token,
-        "link": f"{settings.public_url}/api/challenge/open/{token}",
+        "link": f"{settings.public_url}/challenge/open/{token}",
         "expires_at": expires_at.isoformat(),
     }
 
@@ -83,6 +95,7 @@ async def get_challenge(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    """JSON API — fetch challenge data by token (used internally by the app)."""
     result = await db.execute(select(Challenge).where(Challenge.token == token))
     challenge = result.scalar_one_or_none()
     if challenge is None:
