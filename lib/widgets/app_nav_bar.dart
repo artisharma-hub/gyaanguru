@@ -115,13 +115,13 @@ class _NavItem extends StatelessWidget {
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: _cyanStart.withValues(alpha: 0.55),
+                    color: const Color.fromARGB(255, 221, 55, 196).withValues(alpha: 0.55),
                     blurRadius: 18,
                     spreadRadius: 0,
                     offset: const Offset(0, 4),
                   ),
                   BoxShadow(
-                    color: _cyanStart.withValues(alpha: 0.20),
+                    color: const Color.fromARGB(255, 214, 92, 200).withValues(alpha: 0.20),
                     blurRadius: 32,
                     offset: const Offset(0, 6),
                   ),
