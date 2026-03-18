@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     port: int = 8000
     environment: str = "development"
     # Base URL for share links (override in .env for production)
-    public_url: str = "http://192.168.100.53:8000"
+    public_url: str = "http://192.168.100.155:8000"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

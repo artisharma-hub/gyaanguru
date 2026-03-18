@@ -21,12 +21,13 @@ class SoundService {
     }
   }
 
-  Future<void> correct()      => _play('sounds/correct.wav');
-  Future<void> wrong()        => _play('sounds/wrong.wav');
-  Future<void> click()        => _play('sounds/click.wav');
-  Future<void> matchFound()   => _play('sounds/match_found.wav');
-  Future<void> victory()      => _play('sounds/victory.wav');
-  Future<void> defeat()       => _play('sounds/defeat.wav');
+  Future<void> correct() => _play('sounds/correct.wav');
+  Future<void> correctAnswer() => _play('sounds/correct _answer.mp3');
+  Future<void> wrong() => _play('sounds/wrong.wav');
+  Future<void> click() => _play('sounds/click.wav');
+  Future<void> matchFound() => _play('sounds/match_found.wav');
+  Future<void> victory() => _play('sounds/victory.wav');
+  Future<void> defeat() => _play('sounds/defeat.wav');
   Future<void> timerWarning() => _play('sounds/timer_warning.wav');
-  Future<void> countdown()    => _play('sounds/countdown.wav');
+  Future<void> countdown() => _play('sounds/countdown.wav');
 }

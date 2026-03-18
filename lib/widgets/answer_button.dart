@@ -207,10 +207,12 @@ class _AnswerButtonState extends State<AnswerButton> {
     if (widget.state == AnswerState.correct) {
       return button
           .animate()
-          .shimmer(color: AppColors.correctGreen.withValues(alpha: 0.22), duration: 500.ms)
-          .scaleXY(begin: 0.97, end: 1.0, duration: 200.ms, curve: Curves.elasticOut);
+          .scaleXY(begin: 1.0, end: 1.05, duration: 180.ms, curve: Curves.easeOut)
+          .shimmer(color: AppColors.correctGreen.withValues(alpha: 0.35), duration: 400.ms)
+          .then()
+          .scaleXY(begin: 1.05, end: 1.0, duration: 350.ms, curve: Curves.elasticOut);
     } else if (widget.state == AnswerState.wrong) {
-      return button.animate().shakeX(amount: 6, duration: 350.ms);
+      return button.animate().shakeX(amount: 6, duration: 400.ms);
     } else if (widget.state == AnswerState.selected) {
       return button.animate().scaleXY(begin: 0.96, end: 1.0, duration: 180.ms, curve: Curves.easeOut);
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../app/theme.dart';
 import '../models/question_model.dart';
 import '../services/api_service.dart';
+import '../services/sound_service.dart';
 import '../widgets/answer_button.dart';
 import '../widgets/coin_display.dart';
 import '../widgets/sound_tap.dart';
@@ -113,6 +115,13 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     _timer?.cancel();
     final q = _questions[_currentIndex];
     _answers[q.id] = option;
+    final isCorrect = option == q.correctOption;
+    if (isCorrect) {
+      SoundService().correctAnswer();
+    } else {
+      SoundService().wrong();
+      HapticFeedback.heavyImpact();
+    }
     setState(() {
       _selectedOption = option;
       _correctOption = q.correctOption;
@@ -137,76 +146,86 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
     final quit = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
-          'Quit Challenge?',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontFamily: 'Nunito',
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-          ),
-        ),
-        content: const Text(
-          'Your progress will be lost and you won\'t be able to start from where you left.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontFamily: 'Nunito',
-            fontSize: 14,
-          ),
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        actions: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ElevatedButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+              const Text(
+                'Quit Challenge?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
                 ),
-                child: const Text(
-                  'Keep Playing',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: Colors.white,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Your progress will be lost and you won\'t be able to start from where you left.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Nunito',
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Keep Playing',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.wrongRed,
-                  side: const BorderSide(color: AppColors.wrongRed, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.wrongRed,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: const BorderSide(color: AppColors.wrongRed, width: 1.5),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Quit Challenge',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                  child: const Text(
+                    'Quit Challenge',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: AppColors.wrongRed,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
 
@@ -274,6 +293,20 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
 
   @override
   Widget build(BuildContext context) {
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        if (_started && !_submitted) {
+          _showQuitDialog();
+        } else {
+          context.go('/home');
+        }
+        return true;
+      },
+      child: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final ac = context.ac;
 
     if (_loading) {

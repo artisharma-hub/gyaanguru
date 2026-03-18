@@ -17,10 +17,12 @@ Uri? consumePendingDeepLink() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: 'assets/.env');
   try {
     _pendingDeepLink = await AppLinks().getInitialLink();
-  } catch (_) {}
+  } catch (e) {
+    print(e);
+  }
   runApp(const ProviderScope(child: GyaanGuruApp()));
 }
 

@@ -75,8 +75,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     final lbState = ref.watch(leaderboardProvider);
     final user    = ref.watch(authProvider).valueOrNull;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        context.go('/home');
+        return true;
+      },
+      child: Scaffold(
       extendBody: true,
       bottomNavigationBar: AppNavBar(currentIndex: _navIndex, onTap: _onNavTap),
       body: Column(

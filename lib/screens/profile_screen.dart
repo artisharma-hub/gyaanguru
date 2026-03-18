@@ -205,6 +205,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ── build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        context.go('/home');
+        return true;
+      },
+      child: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final user = ref.watch(authProvider).valueOrNull;
     final ac = context.ac;
 
