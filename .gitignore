@@ -130,7 +130,6 @@ migrate_working_dir/
 
 app.*.symbols
 app.*.map.json
-<<<<<<< HEAD
 
 # Android Studio will place build artifacts here
 /android/app/debug
@@ -142,5 +141,3 @@ app.*.map.json
 .env
 .env.local
 .env.*.local
-=======
->>>>>>> 4af3265 (venv gitignore)

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,7 +22,7 @@ void main() async {
   try {
     _pendingDeepLink = await AppLinks().getInitialLink();
   } catch (e) {
-    print(e);
+    log(e.toString());
   }
   runApp(const ProviderScope(child: GyaanGuruApp()));
 }
